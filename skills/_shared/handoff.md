@@ -123,7 +123,7 @@ Rules for filling it:
 | `glossary` | `CONTEXT.md` | resume — e.g. `/sdd:design <slug>` |
 | `decide-adr` | `adr/NNNN-<title>.md` | resume — `/sdd:tasks <slug>` or `/sdd:plan-tests <slug>` |
 | `roadmap` | `docs/roadmap.md` | resume your backbone stage |
-| `fix` | `_fixes/<date>-<short>.md` + the diff (+ the spec patch if any) | resume — or `/sdd:review <slug>` when the fix was wide (>5 files / cross-module) |
+| `fix` | the uncommitted diff (+ the `language.md` invariant if one was added) | review + commit yourself — or `/sdd:review` when the fix was wide (>5 files / cross-module) |
 
 The `↳ or` cells above show the `standard`-route rendering; on `quick` the stage auto-skips (and
 the `↳ or` inverts), on `full` the `↳ or` line is dropped — per the *Route-resolved* variant.

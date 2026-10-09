@@ -4,79 +4,123 @@ model: inherit
 effort: high
 agents: [explorer]
 description: >
-  Use to fix a reported bug spec-first: reproduce it, trace the symptom to the owning feature's
-  acceptance criteria, pin it with a failing (RED) test, apply the minimal GREEN fix through the
-  same per-task gate implement uses, then patch the spec so the bug class can't silently return.
-  Triggers on "fix {bug}", "fix the bug in {slug}", "bug in {feature}", "/sdd:fix {slug}",
-  "regression in {slug}", "полагодь баг", "виправ багу", "регресія в {slug}", "чому зламалось".
-  Triage is three-way: AC exists and is violated (regression) / AC is ambiguous (spec-bug —
-  patch the wording) / no AC covers it (gap — add one, marked added-by-fix). Works on a repo
-  with no specs at all (soft mode — code-first, recommends survey after). Writes a fix record
-  under docs/features/{slug}/_fixes/ and commits with an SDD-Fix trailer.
+  Use to fix a reported bug: the dev pastes the bug (ticket text, stack trace, logs, QA steps);
+  Claude finds the root cause in code (not the symptom), agrees the fix + the pinning test with the
+  dev BEFORE writing code, fixes it test-first through the gate, then recommends places with the same mistake,
+  and leaves the change uncommitted for the dev. A reported bug is always treated as a bug — Claude
+  never argues it away. Triggers on "/sdd:fix", "fix {bug}", "bug in {X}", "regression in {X}",
+  "полагодь баг", "виправ багу", "ось баг", "регресія в {X}", "чому зламалось".
 ---
 
 # Skill: fix
 
-The **bugfix entry point** — the backbone in miniature, sized for «it's broken», not «build a feature». A bug is treated as **evidence about the spec**, not only about the code: either an acceptance criterion is violated (the code regressed), the AC was ambiguous enough to permit the behaviour (the spec is the root cause), or nothing covers it (a gap). So the fix always lands in two places — the **code** (RED → GREEN through the same gate `implement` runs) and the **spec** (a surgical AC patch) — tied together by a small fix record.
+The bugfix entry point. Input is whatever the dev has — a ticket, a stack trace, logs, QA steps. The
+skill's value over "paste the bug into auto mode": it fixes the **root cause** rather than wrapping the
+symptom, pins it with a test that **failed before and passes after**, agrees both with the dev
+**before** writing code, and then recommends where the **same mistake** lives elsewhere.
 
-This skill keeps only its own machinery. Question phrasing → [`../_shared/ask-style.md`](../_shared/ask-style.md); RED-classification semantics → [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md) (reused, never duplicated); dispatch policy → [`../_shared/agent-roster.md`](../_shared/agent-roster.md).
+**A reported bug is a bug.** QA filed it, the dev took it — Claude does not decide "works as designed".
+When the *correct* behaviour isn't defined anywhere (code, invariants, the ticket), that is a question
+about **what to build**, asked in step 3 — never a reason to stop.
 
-Fix-record prose follows `artifact_language` — but a **spec patch matches the existing spec's language** (the file wins over the setting); code, tests and commits stay English → [`../_shared/artifact-language.md`](../_shared/artifact-language.md).
-
-## Owner
-
-The engineer on the bug (drives). PM / Tech Lead is consulted only when triage lands on «spec-bug» or «gap» — changing an AC is a product decision, not a code one.
+**Same house rules as `story`:** no documents to read, every stop is one screen of decisions;
+nothing committed by Claude; nothing left open — a decision is asked the moment it appears or, if it's
+a convention-following detail, just made. Conventions (layering, test style, gate commands) come from
+`CLAUDE.md` + the code. Prose written into context docs follows `artifact_language`
+→ [`../_shared/artifact-language.md`](../_shared/artifact-language.md).
 
 ## Inputs
 
-- `<slug>` — optional; pass it when you know which feature owns the bug, otherwise step 2 finds it from the symptom.
-- The bug report, in any form — a sentence, a stack trace, a failing request, a screenshot description.
-- **Soft gate (never hard-refuse):** `docs/features/` with ≥1 `spec.md`. Absent (a brownfield repo that never ran the backbone) → still run, in **no-spec mode**: steps 1 → 3 → 4 → record, skip the spec patch, and recommend `/sdd:survey` in the handoff.
-- (Optional) `.claude/sdd.local.md` — gate command overrides; otherwise the commands are detected per `implement`'s cascade.
-
-No depth dial and no `.size` here — a fix is one size, and the interview is the bug report itself.
+- The bug report, in any form. Required.
+- `CLAUDE.md` + the code.
+- `docs/contexts/<Context>/language.md` (if present) — its **Invariants** are the closest thing to a
+  spec: a violated invariant confirms the expected behaviour → [`../story/references/contexts.md`](../story/references/contexts.md).
 
 ## Protocol
 
-1. **Intake — reproduce before touching anything.** At most 1–2 `AskUserQuestion` (phrasing per [`../_shared/ask-style.md`](../_shared/ask-style.md)), only for what the report doesn't already say: expected vs actual, the steps, the scope (one user? all? since when?). Outcome: a one-line reproduction statement — «doing X, expected Y, got Z». A bug you can't state this way isn't ready to fix.
-2. **Trace to spec (triage).** Grep `docs/features/*/spec.md` (+ the candidate slug's `_fixes/` for a recurrence) for the reproduction's domain terms; locate the owning slug and the closest §5 AC. In parallel, dispatch [`explorer`](../../agents/explorer.md) — `subagent_type: "sdd:explorer"` (fallback `Explore` / inline per [`../_shared/agent-roster.md`](../_shared/agent-roster.md)) — to localize the code path. Three outcomes (decision table → [`./references/triage.md`](./references/triage.md)):
-   - **(a) Regression** — an AC describes the expected behaviour and the code violates it. The spec is right; only the code changes.
-   - **(b) Spec-bug** — the AC exists but a reasonable implementer could read it and produce the observed behaviour. The wording is the root cause — the AC gets patched (with the user, step 5).
-   - **(c) Gap** — no AC covers the behaviour. A new AC is added to §5, marked `<!-- added-by-fix: <date> -->`.
-   - **No-spec mode** — no `docs/features/` (or no spec plausibly owns the symptom): skip the spec patch, say so in the record, recommend `survey`.
-3. **RED — pin the bug with a failing test.** Write the **minimal** test that reproduces the bug at the level the behaviour implies (unit for a rule, integration for a dependency behaviour, e2e for a flow). Run it and classify the first run per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md) — it must be a **GOOD red** (fails on the assertion that encodes the *expected* behaviour); quote the failing line. A bug that can't be pinned by a test → STOP and say so — an unverifiable fix is a guess.
-4. **GREEN + GATE — minimal fix.** Make the RED test pass with the smallest change; **no drive-by refactors** (anything the fix exposes goes to the record's follow-ups). Then the same per-task gate `implement` runs: unit + lint + vet (+ integration when available), via the detected commands (detection cascade → [`../implement/references/command-detection.md`](../implement/references/command-detection.md)). Red gate → fix it, never commit around it.
-5. **Spec patch + fix record.** Apply the step-2 branch — (a) nothing to patch, re-verify the AC; (b) patch the AC wording; (c) add the new AC with the marker. **Any spec change is confirmed with the user** in one `AskUserQuestion` (before/after wording shown). Then write `docs/features/<slug>/_fixes/<date>-<short-slug>.md` from [`./templates/fix-record.md`](./templates/fix-record.md): symptom → root cause → the pinning test → the spec patch (or why there is none).
-6. **Commit + handoff.** Propose commit `fix: <slug> <short summary>` with trailers `SDD-Fix: <date>-<short-slug>` and `SDD-AC: <id>` (when an AC was traced). Then **emit the stage-handoff block** per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant — `/clear` optional): *What I did* + *Review* (the diff, `_fixes/<date>-<short-slug>.md`, the spec patch if any) + *Run next*: resume what you were doing; **when the fix touched >5 files or crossed a module boundary, recommend `/sdd:review <slug>`** — a recommendation, not a gate.
+### 1. Reproduce on paper
+
+From the report, state the bug in one line: **«doing X, expected Y, got Z»**. Ask the dev only for
+what the report and the code can't give (at most one `AskUserQuestion`, ≤ 3 questions, Claude's best
+guess first) — typically the expected value when the ticket only says "wrong".
+
+### 2. Root cause
+
+- Stack trace / error message / named endpoint → localize it yourself (Grep/Read). Symptom only
+  ("the total is wrong sometimes") → dispatch [`explorer`](../../agents/explorer.md) **with
+  `model: sonnet`** to map the code path, `file:line` anchored.
+- Separate **symptom** (where it blows up) from **cause** (where the wrong decision is made). The fix
+  goes at the cause. If they're the same line, say so.
+- **History check, no files:** `git log -L` / `git blame` on the cause lines — was this fixed before,
+  and which change reintroduced it? A recurrence means the old test was too weak → strengthen it
+  instead of adding a parallel one.
+
+### 3. Agree the fix — before any code
+
+One `AskUserQuestion` call:
+
+> **<bug one-liner>**
+> Cause: `<File.php:line>` — <what the code decides wrongly, in domain terms>.
+> Fix: <the minimal change>.
+> Pinning test: <level — unit / integration / functional> — <the scenario that fails today>.
+
+Options (no "reject" — the dev steers instead):
+- «Yes, do it» **(Recommended)**;
+- a Claude-proposed variation — fix at a different layer, or a stronger/extra test case;
+- free text ("Other").
+
+**Expected behaviour undefined** (no invariant, ticket and code silent, two reasonable readings)?
+Ask that first, in the same call: Claude's recommended behaviour / the alternative / **«Ask PM»** /
+Other. «Ask PM» → print a copy-ready question for the PM and **stop**; the dev re-runs `/sdd:fix`
+with the answer.
+
+### 4. RED → GREEN → GATE
+
+Per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md), **COMMIT replaced by
+STOP**:
+
+- **RED** — the agreed test; first run must be a **GOOD red** (fails on the assertion encoding the
+  expected behaviour). Quote the failing line. Can't be pinned by a test → stop and say why: an
+  unpinned fix is a guess.
+- **GREEN** — the smallest change at the cause. No drive-by refactors.
+- **GATE** — the repo's full check (tests + static analysis + architecture + style), per `CLAUDE.md` /
+  [`../implement/references/command-detection.md`](../implement/references/command-detection.md).
+- An unagreed decision appears (changes behaviour or a contract) → ask now; a convention-following
+  detail → just do it.
+
+### 5. Same mistake elsewhere — a recommendation, after the fix
+
+Only once the bug itself is green: search for the pattern the cause revealed — other callers of the
+same method, sibling handlers / use cases with the same logic, the same query shape. Found any →
+recommend them, one `AskUserQuestion`, each place as `file:line` + why it's the same mistake:
+- «Leave them — recommendation only» **(Recommended)** — the fix stays scoped to the reported bug;
+- «Fix them too» — each gets its own RED test, same gate, same diff.
+
+None found → one line saying so.
+
+### 6. Hand over
+
+- If the bug exposed a rule that wasn't written down, add it to the context's `language.md`
+  `## Invariants` (bootstrap the file per the contexts reference if absent) — it lands in the same diff.
+- Emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant):
+  one line with the gate result, then «Review the diff and commit it yourself». Never `git add` /
+  `git commit`.
 
 ## Definition of Done
 
-- The bug is reproduced by a test that **failed before the fix and passes after** — GOOD red proven, failing line quoted.
-- The gate is clean: unit + lint + vet (+ integration where available).
-- The triage outcome is explicit — regression / spec-bug / gap / no-spec — and the matching spec patch is applied (or its absence explained in the record).
-- `docs/features/<slug>/_fixes/<date>-<short-slug>.md` exists: symptom, root cause, the test, the spec patch, follow-ups.
-- The commit carries the `SDD-Fix:` trailer (+ `SDD-AC:` when traced); any spec change was user-confirmed.
-- The RED-pin (failing test first) + the per-task GATE are this skill's **structural self-check** ([`../_shared/self-check.md`](../_shared/self-check.md)); its result is reported in the handoff.
+- The cause (not just the symptom) is fixed; a test failed before the fix and passes after
+  (GOOD red quoted).
+- Fix + test were agreed with the dev before code; nothing left open.
+- The same-mistake search ran after the fix and its findings were recommended to the dev.
+- Gate green; nothing committed by Claude.
+- The RED pin + the GATE are this skill's **structural self-check**
+  ([`../_shared/self-check.md`](../_shared/self-check.md)); the result is the handoff line.
 
 ## Anti-patterns
 
-- **Fixing without a pinning test.** «It works now» with no RED proof is a guess that re-breaks silently — the exact failure mode this skill exists to stop.
-- **Patching code when the spec was the bug.** If the AC permitted the behaviour, the wording is the root cause; leave it unpatched and the next implementation reintroduces the bug legally.
-- **Silent spec edits.** Every AC patch/addition is confirmed with the user — the spec is a contract, not a scratchpad.
-- **Drive-by refactoring.** The fix commit is minimal; refactors the fix exposed go to the record's follow-ups, not into the same diff.
-- **Skipping the gate because the change is «one line».** One-line fixes break suites just fine.
-- **Hard-refusing on a repo without specs.** A brownfield bug is this skill's front door — degrade to no-spec mode and recommend `survey`, never block.
-- **Writing a parallel test when `_fixes/` shows the same symptom was fixed before.** That's a recurrence — read the old record and **strengthen its test** instead.
-
-## References & template
-
-- [`./references/triage.md`](./references/triage.md) — the symptom→spec trace: grep strategy, the regression / spec-bug / gap decision table, the `added-by-fix` marker, no-spec mode, the recurrence check.
-- [`./templates/fix-record.md`](./templates/fix-record.md) — the fix-record scaffold (symptom → root cause → pinning test → spec patch → follow-ups).
-- [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md) — RED classification (GOOD red / BAD red / false-pass) — the semantics step 3 reuses.
-- [`../implement/references/command-detection.md`](../implement/references/command-detection.md) — how the step-4 gate commands are resolved (settings override → Makefile → package scripts → language manifests).
-- [`../_shared/ask-style.md`](../_shared/ask-style.md) · [`../_shared/agent-roster.md`](../_shared/agent-roster.md) · [`../_shared/handoff.md`](../_shared/handoff.md).
-
-## Example invocation
-
-> **User:** «/sdd:fix — discounts are applied twice when the user clicks pay twice fast»
-> **Skill:** intake confirms: expected one discount per order, got two on a double-click (all users, since the checkout-discounts release). Trace: `docs/features/checkout-discounts/spec.md` AC-04 says «a discount is applied to an order at most once» → the code violates it → **regression**. `explorer` localizes the apply-discount handler (no idempotency check). RED: an integration test posting the same apply twice asserts one discount row — fails with `got 2, want 1` (GOOD red). GREEN: guard on the existing uniqueness key; gate clean. Spec: nothing to patch (AC-04 was right). Record `_fixes/2026-06-12-double-discount.md`; commit `fix: checkout-discounts double-applied discount` + `SDD-Fix:` / `SDD-AC: AC-04` trailers. Handoff: 2 files touched → no review push; resume.
+- **"Not a bug" / "works as designed"** — not Claude's call. Undefined expected behaviour is a question, not a verdict.
+- **Fixing the symptom** — a null-check where the wrong value is produced three calls earlier.
+- **Fixing without a pinning test**, or with a test that passes before the fix.
+- **Drive-by refactoring** in the fix diff.
+- **Writing fix records, notes or open-question lists** — the diff + the test are the record.
+- **Committing** — the dev owns the commit.
