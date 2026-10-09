@@ -2,7 +2,7 @@
 name: fix
 model: inherit
 effort: high
-agents: [explorer]
+agents: [explorer, devils-advocate]
 description: >
   Use to fix a reported bug: the dev pastes the bug (ticket text, stack trace, logs, QA steps);
   Claude digs for the root cause (several hypotheses, traced to where the wrong value is born),
@@ -80,6 +80,18 @@ mismatch + the exact code path that mishandles it; the test in step 5 pins *our*
 input with a stub. Say plainly that the external side wasn't reproduced.
 
 Can't be pinned at all → stop and say why: an unpinned fix is a guess.
+
+### 3b. Challenge it — only when the bug isn't trivial
+
+Dispatch [`devils-advocate`](../../agents/devils-advocate.md) in **Mode D** **with `model: sonnet`**
+(a bounded check on concrete inputs — it doesn't need the heavier tier) when **any** of:
+- the cause is not on the line where the symptom shows;
+- the bug touches money, state transitions, concurrency / transactions, or data already in the DB;
+- more than one hypothesis survived step 2.
+
+Skip it for the trivial (a wrong field name, a missing validation on the line that fails). Its
+findings are folded into step 4's screen — a `wrong-cause` / `still-broken` finding sends Claude back
+to steps 2–3 first; a `collateral` one becomes a line under the fix. `HOLDS` adds nothing.
 
 ### 4. Show it, propose the fix, agree — before touching production code
 
