@@ -126,16 +126,20 @@ Run the per-task cycle from [`../implement/references/tdd-loop.md`](../implement
 Code-first schema: after the entity changes are green, generate the migration with the repo's tool
 and include it in the slice.
 
-If, during GREEN, Claude has to make a decision that was **not** agreed in step 5 (a locking
-strategy, a new exception class, a query shape), it records it as a *judgment call*.
+**Nothing stays open.** If GREEN hits a decision that was not agreed in step 5:
+- it changes behaviour, the model, or a contract (a new state, a locking strategy, a new error the
+  client sees) → **stop and ask now**, one `AskUserQuestion` with Claude's recommendation first,
+  then continue;
+- it's a pure implementation detail that follows `CLAUDE.md` / existing patterns (naming, a private
+  helper, which existing exception base class) → just do it, don't mention it.
+
+Nothing is "recorded for later" — no notes, no open-question lists.
 
 ### 7. Hand the slice to the dev
 
-One screen, no report:
+Two lines, no report — every decision was already made with the dev in steps 5–6:
 
 - one line: slice name, gate result (`ci:phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`);
-- the judgment calls, each as an `AskUserQuestion` (accept **(Recommended)** / a Claude-proposed
-  alternative / Other) — usually 0–3;
 - then: «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
 
 Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, offer
@@ -146,6 +150,7 @@ Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the las
 - Every devil's-advocate finding is resolved or was carried to the PM (and answered on resume).
 - Touched contexts' `language.md` / `model.md` reflect the change (part of the dev's diff).
 - Every behaviour was agreed in step 5 before its code was written; each has its test(s).
+- Every decision made during the build was either agreed with the dev or is a convention-following detail; nothing is left open.
 - Gate green per slice; nothing committed by Claude.
 
 ## Anti-patterns
