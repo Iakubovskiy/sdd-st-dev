@@ -123,6 +123,12 @@ None found → one line saying so.
 
 ### 7. Hand over
 
+- **Keep the pinning test?** One `AskUserQuestion` (bundled with step 6's question when there is one):
+  - «Keep it» — **(Recommended)** for a unit / integration test: cheap, and it guards the regression;
+  - «Remove it» — **(Recommended)** for a functional / API test when an existing test already covers
+    this endpoint: the fix stays proven (it went red → green), the suite doesn't grow another slow test;
+  - Other — e.g. «fold the case into `<ExistingTest>`».
+  Remove → delete the test file / method and re-run the affected suite once.
 - If the bug exposed a rule that wasn't written down, add it to the context's `language.md`
   `## Invariants` (bootstrap the file per the contexts reference if absent) — it lands in the same diff.
 - Emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant):
@@ -136,6 +142,7 @@ None found → one line saying so.
   was shown and our handling is pinned with a stub.
 - The failing test + proposed fix were agreed with the dev before production code changed; nothing left open.
 - The same-mistake search ran after the fix and its findings were recommended to the dev.
+- The dev chose whether the pinning test stays.
 - Gate green; nothing committed by Claude.
 - The RED pin + the GATE are this skill's **structural self-check**
   ([`../_shared/self-check.md`](../_shared/self-check.md)); the result is the handoff line.
