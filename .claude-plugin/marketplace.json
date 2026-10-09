@@ -1,5 +1,6 @@
 {
   "name": "sdd-st-dev",
+  "description": "Stfalcon team plugins for Claude Code: sdd — PM story, small task and bug fix workflows with test-first builds and devil's-advocate checks (fork of genkovich/sdd, MIT).",
   "owner": {
     "name": "Iakubovskiy",
     "url": "https://github.com/Iakubovskiy"
