@@ -53,9 +53,12 @@ Then one `AskUserQuestion`: «Switch to /sdd:story» **(Recommended)** / «Keep 
 scope» / Other. Staying small is the dev's call.
 
 **Changes existing behaviour?** Dispatch [`devils-advocate`](../../agents/devils-advocate.md) in
-**Mode C** **with `model: sonnet`**, capped at **3 findings**, with the task text + the step-1 places.
-Purely additive changes skip it. Findings become questions in step 3 (recommendation / alternative /
-«Ask PM» / Other); «Ask PM» → copy-ready question for the PM and **stop**.
+**Mode C** **with `model: sonnet`** with the task text + the step-1 places. Purely additive changes
+skip it. Findings are **not truncated** — how many there are is itself the signal:
+- **≤ 3 material findings** → they become questions in step 3 (recommendation / alternative /
+  «Ask PM» / Other); «Ask PM» → copy-ready question for the PM and **stop**;
+- **more than 3** → the task isn't small: one `AskUserQuestion` — «Switch to /sdd:story» **(Recommended)**,
+  carrying the findings over / «Stay small — walk me through all of them» / Other.
 
 ### 3. Agree before code
 
