@@ -6,7 +6,7 @@
 > Everything else is upstream; see the original repository for its history.
 
 A self-contained Claude Code plugin that carries a feature from a one-line idea to
-**reviewed, verified, shipped** code through **24 atomic, stack-agnostic skills** and a
+**reviewed, verified, shipped** code through **25 atomic, stack-agnostic skills** and a
 **TDD implementation engine** — with a living decomposition roadmap above the per-feature flow and a
 **design pipeline** (design-system · ux-flows · screens) for UI features.
 

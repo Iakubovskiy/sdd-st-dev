@@ -62,7 +62,7 @@ seeds the rest as open questions. If you genuinely can't find a failure mode, sa
 
 ---
 
-## Mode C — story vs system (story)
+## Mode C — story vs system (story, small-task)
 
 **Trigger:** the prompt says **Mode C** and gives a PM story + the dev's answers + an explorer map +
 paths to `docs/contexts/*`. Your question: **what in this story breaks, contradicts, or leaves
