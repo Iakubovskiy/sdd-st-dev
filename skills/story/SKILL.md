@@ -142,6 +142,10 @@ Two lines, no report — every decision was already made with the dev in steps 5
 - one line: slice name, gate result (`ci:phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`);
 - then: «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
 
+After the **last** slice, emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md)
+(utility variant — no `/clear`, no commit proposed): *What I did* = slices built, *Review* = the
+uncommitted diff, *Run next* = optional `/sdd:review <slug>`.
+
 Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, offer
 `/sdd:review <slug>` as an **optional** independent review — never a gate.
 
@@ -152,6 +156,8 @@ Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the las
 - Every behaviour was agreed in step 5 before its code was written; each has its test(s).
 - Every decision made during the build was either agreed with the dev or is a convention-following detail; nothing is left open.
 - Gate green per slice; nothing committed by Claude.
+- The per-slice GATE (tests + static analysis + architecture checks) is this skill's **structural
+  self-check** ([`../_shared/self-check.md`](../_shared/self-check.md)); its result is the slice's one-line report.
 
 ## Anti-patterns
 

@@ -1,7 +1,7 @@
 # SDD — Spec-Driven Development for Claude Code
 
 A self-contained Claude Code plugin that carries a feature from a one-line idea to
-**reviewed, verified, shipped** code through **23 atomic, stack-agnostic skills** and a
+**reviewed, verified, shipped** code through **24 atomic, stack-agnostic skills** and a
 **TDD implementation engine** — with a living decomposition roadmap above the per-feature flow and a
 **design pipeline** (design-system · ux-flows · screens) for UI features.
 
@@ -81,6 +81,21 @@ curl -fsSL https://raw.githubusercontent.com/genkovich/sdd/main/install.sh | bas
 How every Claude-specific mechanism — `AskUserQuestion`, subagents, `/clear`, the implement
 engine modes — maps to Codex / Cursor is one table:
 [`skills/_shared/tool-adapters.md`](./skills/_shared/tool-adapters.md).
+
+## Story track (PM story → code)
+
+For a feature that arrives as a **PM story** rather than an idea, skip the backbone and run one command:
+
+```text
+/sdd:story <paste the story>
+```
+
+It scouts the code, asks only what the story + code can't answer, runs a devil's-advocate pass
+(story vs the existing system), models only what the scope needs (code-first: entity mapping, the
+ORM diff tool owns migrations), agrees each slice's behaviour + tests with you **before** writing code,
+then builds it test-first. It never commits — you review and commit each slice. Docs grow per
+**bounded context** (`docs/contexts/<Context>/language.md` + `model.md`), not per feature →
+[`skills/story/SKILL.md`](./skills/story/SKILL.md).
 
 ## First run
 
