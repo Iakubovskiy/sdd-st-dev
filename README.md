@@ -1,5 +1,10 @@
 # SDD — Spec-Driven Development for Claude Code
 
+> **Fork notice.** This is a team fork of [genkovich/sdd](https://github.com/genkovich/sdd) by
+> **Kyrylo Genkov**, distributed under the [MIT License](./LICENSE). The fork adds the **story track**
+> (`/sdd:story` — PM story → code, bounded-context docs, devil's-advocate "story vs system" mode).
+> Everything else is upstream; see the original repository for its history.
+
 A self-contained Claude Code plugin that carries a feature from a one-line idea to
 **reviewed, verified, shipped** code through **24 atomic, stack-agnostic skills** and a
 **TDD implementation engine** — with a living decomposition roadmap above the per-feature flow and a
@@ -49,21 +54,21 @@ flowchart LR
 **Claude Code** — native plugin:
 
 ```text
-/plugin marketplace add genkovich/sdd
-/plugin install sdd@sdd
+/plugin marketplace add Iakubovskiy/sdd-st-dev
+/plugin install sdd@sdd-st-dev
 ```
 
-After updating to a new release: re-run `/plugin install sdd@sdd`, then `/reload-plugins`.
+After updating to a new release: re-run `/plugin install sdd@sdd-st-dev`, then `/reload-plugins`.
 
 **Codex CLI** — `cd` into your project first (installs into `.agents/skills/` + `.codex/agents/`
 of the current directory; `--global` for `~`, `--prefix DIR` for an arbitrary directory):
 
 ```sh
 cd your-project
-curl -fsSL https://raw.githubusercontent.com/genkovich/sdd/main/install.sh | bash -s -- codex
+curl -fsSL https://raw.githubusercontent.com/Iakubovskiy/sdd-st-dev/main/install.sh | bash -s -- codex
 ```
 
-Restart codex and type `$sdd-specify`. Alternative: `codex plugin marketplace add genkovich/sdd`,
+Restart codex and type `$sdd-specify`. Alternative: `codex plugin marketplace add Iakubovskiy/sdd-st-dev`,
 then **inside codex** `/plugins` → the `sdd` tab → **Install plugin** — registers the
 **unprefixed** names (`$specify`) instead of the script's `$sdd-specify`. **Pick one path, not
 both** — running both shows every skill twice. Undo: `install.sh codex --uninstall` (script) or
@@ -75,7 +80,7 @@ dot-directories it writes are hidden by default in Explorer.
 
 ```sh
 cd your-project
-curl -fsSL https://raw.githubusercontent.com/genkovich/sdd/main/install.sh | bash -s -- cursor
+curl -fsSL https://raw.githubusercontent.com/Iakubovskiy/sdd-st-dev/main/install.sh | bash -s -- cursor
 ```
 
 How every Claude-specific mechanism — `AskUserQuestion`, subagents, `/clear`, the implement

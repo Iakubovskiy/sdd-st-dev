@@ -293,11 +293,11 @@ def main() -> int:
 
     # --- invocation form: the namespaced /sdd:<name>, never the hyphenated /sdd-<name> ---
     # The plugin ships skills (no commands/ dir), so Claude Code invokes them /sdd:<name>. The only
-    # legit /sdd- in the tree is the proof-run branch ref proof/sdd-notification-preferences.
+    # legit /sdd- in the tree is the proof-run branch ref proof/sdd-notification-preferences and the fork repo path Iakubovskiy/sdd-st-dev.
     # We scan docs + the manifests (the v1.8.4 sweep missed plugin.json's description —
     # that gap stays closed).
     print("== invocation form ==")
-    SDD_HYPHEN = re.compile(r"(?<!proof)/sdd-")
+    SDD_HYPHEN = re.compile(r"(?<!proof)/sdd-(?!st-dev)")
     form_files = link_files + [ROOT / ".claude-plugin" / "plugin.json", ROOT / ".claude-plugin" / "marketplace.json"]
     offenders: list[str] = []
     for f in sorted(set(form_files)):

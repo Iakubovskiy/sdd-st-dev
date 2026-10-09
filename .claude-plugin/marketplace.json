@@ -1,9 +1,8 @@
 {
-  "name": "sdd",
+  "name": "sdd-st-dev",
   "owner": {
-    "name": "Kyrylo Genkov",
-    "email": "genkovi4@gmail.com",
-    "url": "https://github.com/genkovich"
+    "name": "Iakubovskiy",
+    "url": "https://github.com/Iakubovskiy"
   },
   "plugins": [
     {
