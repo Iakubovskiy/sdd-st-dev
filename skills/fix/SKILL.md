@@ -5,8 +5,9 @@ effort: high
 agents: [explorer]
 description: >
   Use to fix a reported bug: the dev pastes the bug (ticket text, stack trace, logs, QA steps);
-  Claude finds the root cause in code (not the symptom), agrees the fix + the pinning test with the
-  dev BEFORE writing code, fixes it test-first through the gate, then recommends places with the same mistake,
+  Claude digs for the root cause (several hypotheses, traced to where the wrong value is born),
+  proves it with a failing test, shows the failure + proposes the fix and agrees it with the dev,
+  then fixes it through the gate, then recommends places with the same mistake,
   and leaves the change uncommitted for the dev. A reported bug is always treated as a bug — Claude
   never argues it away. Triggers on "/sdd:fix", "fix {bug}", "bug in {X}", "regression in {X}",
   "полагодь баг", "виправ багу", "ось баг", "регресія в {X}", "чому зламалось".
@@ -15,9 +16,10 @@ description: >
 # Skill: fix
 
 The bugfix entry point. Input is whatever the dev has — a ticket, a stack trace, logs, QA steps. The
-skill's value over "paste the bug into auto mode": it fixes the **root cause** rather than wrapping the
-symptom, pins it with a test that **failed before and passes after**, agrees both with the dev
-**before** writing code, and then recommends where the **same mistake** lives elsewhere.
+skill's value over "paste the bug into auto mode": it **digs wider and deeper** — several hypotheses,
+the wrong value traced to where it's born, history checked — then **proves** the cause with a failing
+test, **shows** that failure with a proposed fix for the dev to agree, fixes it through the gate, and
+recommends where the **same mistake** lives elsewhere.
 
 **A reported bug is a bug.** QA filed it, the dev took it — Claude does not decide "works as designed".
 When the *correct* behaviour isn't defined anywhere (code, invariants, the ticket), that is a question
@@ -44,51 +46,72 @@ From the report, state the bug in one line: **«doing X, expected Y, got Z»**. 
 what the report and the code can't give (at most one `AskUserQuestion`, ≤ 3 questions, Claude's best
 guess first) — typically the expected value when the ticket only says "wrong".
 
-### 2. Root cause
+### 2. Dig — wider and deeper than the first plausible line
 
-- Stack trace / error message / named endpoint → localize it yourself (Grep/Read). Symptom only
-  ("the total is wrong sometimes") → dispatch [`explorer`](../../agents/explorer.md) **with
-  `model: sonnet`** to map the code path, `file:line` anchored.
-- Separate **symptom** (where it blows up) from **cause** (where the wrong decision is made). The fix
-  goes at the cause. If they're the same line, say so.
-- **History check, no files:** `git log -L` / `git blame` on the cause lines — was this fixed before,
-  and which change reintroduced it? A recurrence means the old test was too weak → strengthen it
-  instead of adding a parallel one.
+This step is the reason the skill exists. Auto mode stops at the first line that *could* explain the
+symptom; this skill does not.
 
-### 3. Agree the fix — before any code
+- **Localize.** Stack trace / error / named endpoint → Grep/Read yourself. Symptom only ("the total is
+  wrong sometimes") → dispatch [`explorer`](../../agents/explorer.md) **with `model: sonnet`** to map
+  the code path, `file:line` anchored.
+- **Trace the wrong value to where it's born**, not where it surfaces: entity method → use case →
+  repository query → presenter / response, and across contexts (Messenger handlers, shared UUIDs).
+  Symptom (where it shows) and cause (where the wrong decision is made) are named separately.
+- **2–3 hypotheses, not one.** Each is confirmed or refuted with evidence — a test, a query, a code
+  path that can or can't be reached. Keep the refuted ones: they go into the step-4 summary in one line each.
+- **Check the usual suspects** when they fit the symptom: data already in the DB (nulls, old enum
+  values, rows created before a migration), concurrency / transactions / locking (intermittent bugs),
+  time zones and periods, rounding / money, caching, async ordering.
+- **History, no files.** `git log -L` / `git blame` on the cause lines: which change introduced it,
+  was it fixed before? A recurrence means the old test was too weak → strengthen that test instead of
+  adding a parallel one.
 
-One `AskUserQuestion` call:
+### 3. Prove it — a failing test before any fix
+
+Write the test that reproduces the bug at the level the behaviour implies (unit for a rule,
+integration for persistence / a handler, functional for a request → full response; style per
+`CLAUDE.md`). Run it and classify per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md):
+it must be a **GOOD red** — failing on the assertion that encodes the expected behaviour. Keep the
+failing output for step 4.
+
+**External integrations** (payment provider, SQS, S3, push, a third-party API) — the bug often can't
+be reproduced locally. Then the proof is the evidence instead: the log line / payload / contract
+mismatch + the exact code path that mishandles it; the test in step 5 pins *our* handling of that
+input with a stub. Say plainly that the external side wasn't reproduced.
+
+Can't be pinned at all → stop and say why: an unpinned fix is a guess.
+
+### 4. Show it, propose the fix, agree — before touching production code
+
+One `AskUserQuestion` call; the question body is one screen:
 
 > **<bug one-liner>**
 > Cause: `<File.php:line>` — <what the code decides wrongly, in domain terms>.
-> Fix: <the minimal change>.
-> Pinning test: <level — unit / integration / functional> — <the scenario that fails today>.
+> Proof: `<TestClass::testMethod>` fails — `<the quoted assertion: expected … got …>`.
+> Ruled out: <hypothesis> — <one-line why> (one line each, if any).
+> Fix: <the minimal change at the cause — a few lines of intent or a short snippet>.
 
 Options (no "reject" — the dev steers instead):
-- «Yes, do it» **(Recommended)**;
-- a Claude-proposed variation — fix at a different layer, or a stronger/extra test case;
+- «Yes, apply the fix» **(Recommended)**;
+- a Claude-proposed variation — the fix at a different layer, or an extra test case;
 - free text ("Other").
 
 **Expected behaviour undefined** (no invariant, ticket and code silent, two reasonable readings)?
 Ask that first, in the same call: Claude's recommended behaviour / the alternative / **«Ask PM»** /
-Other. «Ask PM» → print a copy-ready question for the PM and **stop**; the dev re-runs `/sdd:fix`
-with the answer.
+Other. «Ask PM» → print a copy-ready question for the PM and **stop**; the test stays in the working
+tree; the dev re-runs `/sdd:fix` with the answer.
 
-### 4. RED → GREEN → GATE
+### 5. GREEN → GATE
 
-Per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md), **COMMIT replaced by
-STOP**:
+Per the TDD loop, **COMMIT replaced by STOP**:
 
-- **RED** — the agreed test; first run must be a **GOOD red** (fails on the assertion encoding the
-  expected behaviour). Quote the failing line. Can't be pinned by a test → stop and say why: an
-  unpinned fix is a guess.
-- **GREEN** — the smallest change at the cause. No drive-by refactors.
+- **GREEN** — the agreed change at the cause; the step-3 test now passes. No drive-by refactors.
 - **GATE** — the repo's full check (tests + static analysis + architecture + style), per `CLAUDE.md` /
   [`../implement/references/command-detection.md`](../implement/references/command-detection.md).
 - An unagreed decision appears (changes behaviour or a contract) → ask now; a convention-following
   detail → just do it.
 
-### 5. Same mistake elsewhere — a recommendation, after the fix
+### 6. Same mistake elsewhere — a recommendation, after the fix
 
 Only once the bug itself is green: search for the pattern the cause revealed — other callers of the
 same method, sibling handlers / use cases with the same logic, the same query shape. Found any →
@@ -98,7 +121,7 @@ recommend them, one `AskUserQuestion`, each place as `file:line` + why it's the 
 
 None found → one line saying so.
 
-### 6. Hand over
+### 7. Hand over
 
 - If the bug exposed a rule that wasn't written down, add it to the context's `language.md`
   `## Invariants` (bootstrap the file per the contexts reference if absent) — it lands in the same diff.
@@ -108,9 +131,10 @@ None found → one line saying so.
 
 ## Definition of Done
 
-- The cause (not just the symptom) is fixed; a test failed before the fix and passes after
-  (GOOD red quoted).
-- Fix + test were agreed with the dev before code; nothing left open.
+- The cause (not just the symptom) is fixed; ≥2 hypotheses were checked; a test failed before the
+  fix and passes after (GOOD red shown to the dev) — or, for an external integration, the evidence
+  was shown and our handling is pinned with a stub.
+- The failing test + proposed fix were agreed with the dev before production code changed; nothing left open.
 - The same-mistake search ran after the fix and its findings were recommended to the dev.
 - Gate green; nothing committed by Claude.
 - The RED pin + the GATE are this skill's **structural self-check**
@@ -120,6 +144,8 @@ None found → one line saying so.
 
 - **"Not a bug" / "works as designed"** — not Claude's call. Undefined expected behaviour is a question, not a verdict.
 - **Fixing the symptom** — a null-check where the wrong value is produced three calls earlier.
+- **Stopping at the first plausible hypothesis** — that is auto mode; prove it and rule out the others.
+- **Asking the dev to approve a fix before showing the failing test** — proof first, then the proposal.
 - **Fixing without a pinning test**, or with a test that passes before the fix.
 - **Drive-by refactoring** in the fix diff.
 - **Writing fix records, notes or open-question lists** — the diff + the test are the record.
