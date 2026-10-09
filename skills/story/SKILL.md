@@ -25,8 +25,8 @@ interactive steps, (4) build it test-first, and (5) leave every change uncommitt
 decided (one line each) + `AskUserQuestion` for what needs the dev. Diagrams go to files; chat shows
 only the *delta* vs today ("`Trip` gets status `Cancelled`; new transition `InProgress → Cancelled`").
 
-**Not used by this skill:** the Socratic loop, the critic, the ideation agents, `spec.md`, Arc42,
-staged SQL, `tasks.json`. Conventions come from the repo's `CLAUDE.md` + the code, not `survey`.
+No spec documents, no task files, no hand-written SQL. Conventions come from the repo's `CLAUDE.md`
++ the code. House rules → [`../_shared/house-rules.md`](../_shared/house-rules.md).
 
 ## Inputs
 
@@ -34,7 +34,7 @@ staged SQL, `tasks.json`. Conventions come from the repo's `CLAUDE.md` + the cod
 - `<slug>` — optional; derived from the story title if absent (kebab-case, confirmed in step 1).
 - `CLAUDE.md` + the code — the convention source (layering, test style, commands).
 - `docs/contexts/<Context>/language.md` + `model.md` for every touched context — read if present,
-  bootstrapped if absent (step 1) → [`./references/contexts.md`](./references/contexts.md).
+  bootstrapped if absent (step 1) → [`../_shared/contexts.md`](../_shared/contexts.md).
 - Working state: `.sdd/stories/<slug>.md` (gitignored) — answers, findings, decisions, slice
   status. Lets the run stop (PM blocker) and resume with `/sdd:story <slug>`.
 
@@ -49,7 +49,7 @@ staged SQL, `tasks.json`. Conventions come from the repo's `CLAUDE.md` + the cod
    doing something similar, invariants enforced in code, cross-context links (shared UUIDs, events).
    Output ≤ 40 lines, `file:line` anchored.
 3. For each touched context, load `language.md` + `model.md`. Missing → bootstrap a draft from the
-   code per [`./references/contexts.md`](./references/contexts.md) (one confirm question per context).
+   code per [`../_shared/contexts.md`](../_shared/contexts.md) (one confirm question per context).
 4. Ask the dev **only** what neither the story nor the code answers — one `AskUserQuestion` call,
    ≤ 4 questions, each with Claude's recommended answer first. Zero questions is a valid outcome.
 
@@ -120,9 +120,9 @@ beside the chat — not a document.
 
 ### 6. Build the slice — TDD, no commit
 
-Run the per-task cycle from [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md):
+Run the per-task cycle from [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md):
 `RED → GREEN → REFACTOR → GATE`, with **COMMIT replaced by STOP**. Gate commands come from
-`CLAUDE.md` / the detection cascade ([`../implement/references/command-detection.md`](../implement/references/command-detection.md)).
+`CLAUDE.md` / the detection cascade ([`../_shared/tdd-loop.md`](../_shared/tdd-loop.md)).
 Code-first schema: after the entity changes are green, generate the migration with the repo's tool
 and include it in the slice.
 
@@ -142,12 +142,9 @@ Two lines, no report — every decision was already made with the dev in steps 5
 - one line: slice name, gate result (`ci:phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`);
 - then: «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
 
-After the **last** slice, emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md)
-(utility variant — no `/clear`, no commit proposed): *What I did* = slices built, *Review* = the
-uncommitted diff, *Run next* = optional `/sdd:review <slug>`.
-
-Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, offer
-`/sdd:review <slug>` as an **optional** independent review — never a gate.
+Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, hand over per
+[`../_shared/house-rules.md`](../_shared/house-rules.md) and offer `/sdd:review` as an **optional**
+independent review — never a gate.
 
 ## Definition of Done
 
@@ -157,7 +154,7 @@ Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the las
 - Every decision made during the build was either agreed with the dev or is a convention-following detail; nothing is left open.
 - Gate green per slice; nothing committed by Claude.
 - The per-slice GATE (tests + static analysis + architecture checks) is this skill's **structural
-  self-check** ([`../_shared/self-check.md`](../_shared/self-check.md)); its result is the slice's one-line report.
+  self-check** ([`../_shared/house-rules.md`](../_shared/house-rules.md)); its result is the slice's one-line report.
 
 ## Anti-patterns
 

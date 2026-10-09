@@ -20,15 +20,14 @@ and agrees behaviour + tests with the dev **before** code.
 
 **Same house rules as `story` and `fix`:** no documents to read — every stop is one screen of
 decisions; nothing committed by Claude; nothing left open (ask the moment a decision appears, or just
-do it when it's a convention-following detail). Conventions come from `CLAUDE.md` + the code. Prose
-written into context docs follows `artifact_language` → [`../_shared/artifact-language.md`](../_shared/artifact-language.md).
+do it when it's a convention-following detail). Conventions come from `CLAUDE.md` + the code. Full rules → [`../_shared/house-rules.md`](../_shared/house-rules.md).
 
 ## Inputs
 
 - The task text (ticket, a sentence, a Slack message). Required.
 - `CLAUDE.md` + the code.
 - `docs/contexts/<Context>/language.md` (if present) — terms + invariants of the touched context
-  → [`../story/references/contexts.md`](../story/references/contexts.md).
+  → [`../_shared/contexts.md`](../_shared/contexts.md).
 
 ## Protocol
 
@@ -77,9 +76,9 @@ Devil's-advocate findings (if any) go into the same call, before the behaviours.
 
 ### 4. Build — TDD, no commit
 
-Per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md): `RED → GREEN →
+Per [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md): `RED → GREEN →
 REFACTOR → GATE`, **COMMIT replaced by STOP**. Gate commands per `CLAUDE.md` /
-[`../implement/references/command-detection.md`](../implement/references/command-detection.md).
+[`../_shared/tdd-loop.md`](../_shared/tdd-loop.md).
 Code-first schema change → generate the migration with the repo's diff tool after the entity change is
 green. An unagreed decision that changes behaviour or a contract → ask now; a convention-following
 detail → just do it.
@@ -87,7 +86,7 @@ detail → just do it.
 ### 5. Hand over
 
 - New term or invariant surfaced → add it to the context's `language.md` in the same diff.
-- Emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant):
+- Hand over per [`../_shared/house-rules.md`](../_shared/house-rules.md) 
   one line with the gate result, then «Review the diff and commit it yourself». Never `git add` /
   `git commit`.
 
@@ -97,7 +96,7 @@ detail → just do it.
 - Behaviours + tests were agreed before code; nothing left open.
 - The "is it really small" check ran; the dev chose to stay small or switched to `story`.
 - Gate green; nothing committed by Claude.
-- The per-task GATE is this skill's **structural self-check** ([`../_shared/self-check.md`](../_shared/self-check.md));
+- The per-task GATE is this skill's **structural self-check** ([`../_shared/house-rules.md`](../_shared/house-rules.md));
   its result is the handoff line.
 
 ## Anti-patterns

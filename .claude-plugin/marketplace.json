@@ -8,17 +8,16 @@
     {
       "name": "sdd",
       "source": "./",
-      "version": "2.3.0",
-      "description": "Spec-Driven Development pipeline: 25 atomic Socratic skills (survey/scaffold → spec → ux-flows → design → data-model → api → screens → tasks → tests → implement → review → ship) + a living decomposition roadmap (steps + dependency graph + parallel-safe execution waves) above the per-feature flow + 10 subagents, plus a TDD implementation engine with agent-team and dynamic-workflow modes. The Q&A skills are depth-tunable (easy/medium/hard); the ideation analyses (researcher/strategist/analyst/devil's-advocate) run as named subagents gated by that dial; diagrams are confirmed in prose; and every acceptance criterion is covered end-to-end. Surface-aware: declare target surfaces at design (backend/web/mobile/desktop/CLI/worker/library, as C4 containers); downstream gates the `ui` task layer, UI-driven flows, and frontend test tiers. UI features get a design pipeline (auto-skipped for backend-only work): design-system (the committed canon — Figma MCP / Pencil MCP / code-markdown; on pencil it also bootstraps and seeds the .pen library), ux-flows (user flows + SCR inventory) and screens (the per-state manifest tasks/implement/review build against, reuse-first). Every stage prints a copy-ready handoff (what changed + files to review + `/clear` + the next command).",
+      "version": "0.1.0",
+      "description": "Team fork of genkovich/sdd (MIT) for developers: four commands on top of a TDD engine. /sdd:story — a PM story to code: scouts the code, a devil's-advocate pass for conflicts with the existing system, code-first domain modelling only when needed, every slice's behaviour + tests agreed interactively before code. /sdd:small-task — small changes that follow the repo's existing pattern, with a check that it isn't secretly a feature. /sdd:fix — root cause over symptom: several hypotheses, proof by a failing test, the fix agreed before it's applied. /sdd:review — optional clean-context review. Claude never commits; docs grow per bounded context (docs/contexts).",
       "category": "workflow",
       "tags": [
         "sdd",
-        "spec-driven-development",
-        "prd",
-        "adr",
-        "architecture",
-        "openapi",
-        "tdd"
+        "tdd",
+        "ddd",
+        "bounded-context",
+        "bugfix",
+        "user-story"
       ]
     }
   ]

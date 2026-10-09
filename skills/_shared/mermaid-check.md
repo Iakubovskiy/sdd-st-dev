@@ -1,8 +1,8 @@
 # Mermaid check — validate every diagram after writing it
 
-> **Reference-only.** Not a skill. Any skill that emits a Mermaid diagram (`design` C4 §3/§5,
-> `sequences` §6, `data-model` ER, `survey` C4, `tasks` `_epic` flowchart) runs this **after
-> writing** the diagram and **before committing** it. The rule: a diagram that doesn't parse must
+> **Reference-only.** Not a skill. Any skill that writes a Mermaid diagram (`story` → the class /
+> sequence diagrams in `docs/contexts/<Context>/model.md`) runs this **after writing** it and before
+> handing the diff to the dev. The rule: a diagram that doesn't parse must
 > never be committed — broken Mermaid renders as a red error box for the reader.
 
 ## Procedure
@@ -16,12 +16,12 @@
 
 1. **`mmdc` (mermaid-cli)** — the real parser. On PATH, or `npx -y @mermaid-js/mermaid-cli`. Run it over the file that contains the diagrams (it extracts and renders every ```mermaid block) to a throwaway output and check the exit code:
    ```bash
-   mmdc -i docs/features/<slug>/sad.md -o /tmp/_mmd_check.md 2>&1   # exit != 0 → a block failed; stderr names it
+   mmdc -i docs/contexts/<Context>/model.md -o /tmp/_mmd_check.md 2>&1   # exit != 0 → a block failed; stderr names it
    ```
    A non-zero exit means at least one block is invalid; the stderr names the diagram + the syntax error. Delete the throwaway output after.
 2. **Project mermaid dep** — if `node_modules/mermaid` exists, a tiny `mermaid.parse(src)` per extracted block (parse-only, no render) is enough and fast.
 3. **Obsidian vault** — if the docs live in an Obsidian vault, the obsidian-cli render/error-capture can confirm the block renders.
-4. **No renderer → structural lint** (the fallback; what `design` did inline — now centralized here): for each ```mermaid block check
+4. **No renderer → structural lint** (the fallback): for each ```mermaid block check
    - matched opening/closing ```mermaid fences;
    - a recognized first token: `graph`/`flowchart`/`sequenceDiagram`/`classDiagram`/`erDiagram`/`stateDiagram`/`C4Context`/`C4Container`/`C4Component`/`journey`/`gantt`;
    - **every node/participant referenced by an edge/`Rel` is declared first**;

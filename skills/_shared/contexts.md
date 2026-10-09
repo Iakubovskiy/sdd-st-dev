@@ -57,7 +57,7 @@ sequenceDiagram
 
 ## Bootstrap (no docs yet)
 
-When `story` touches a context with no `docs/contexts/<Context>/`:
+When `story`, `small-task` or `fix` needs to write to a context with no `docs/contexts/<Context>/`:
 
 1. Draft from code only — entities, VOs, enums (with their cases/transitions), domain services,
    events published/consumed. No guessing beyond what the code states.
@@ -69,5 +69,7 @@ The bootstrap is per touched context, never repo-wide — docs grow where work h
 
 ## Updating
 
-`story` step 4 edits only the touched sections. Every edit lands in the dev's diff, so it gets the
+`story` (step 4), `small-task` and `fix` (new term / invariant) edit only the touched sections. Every edit lands in the dev's diff, so it gets the
 same review as the code. Never rewrite a whole file to change one aggregate.
+
+Diagrams are checked per [`mermaid-check.md`](./mermaid-check.md) after writing.

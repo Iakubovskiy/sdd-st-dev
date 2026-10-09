@@ -28,15 +28,14 @@ about **what to build**, asked in step 3 — never a reason to stop.
 **Same house rules as `story`:** no documents to read, every stop is one screen of decisions;
 nothing committed by Claude; nothing left open — a decision is asked the moment it appears or, if it's
 a convention-following detail, just made. Conventions (layering, test style, gate commands) come from
-`CLAUDE.md` + the code. Prose written into context docs follows `artifact_language`
-→ [`../_shared/artifact-language.md`](../_shared/artifact-language.md).
+`CLAUDE.md` + the code. Full rules → [`../_shared/house-rules.md`](../_shared/house-rules.md).
 
 ## Inputs
 
 - The bug report, in any form. Required.
 - `CLAUDE.md` + the code.
 - `docs/contexts/<Context>/language.md` (if present) — its **Invariants** are the closest thing to a
-  spec: a violated invariant confirms the expected behaviour → [`../story/references/contexts.md`](../story/references/contexts.md).
+  spec: a violated invariant confirms the expected behaviour → [`../_shared/contexts.md`](../_shared/contexts.md).
 
 ## Protocol
 
@@ -70,7 +69,7 @@ symptom; this skill does not.
 
 Write the test that reproduces the bug at the level the behaviour implies (unit for a rule,
 integration for persistence / a handler, functional for a request → full response; style per
-`CLAUDE.md`). Run it and classify per [`../implement/references/tdd-loop.md`](../implement/references/tdd-loop.md):
+`CLAUDE.md`). Run it and classify per [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md):
 it must be a **GOOD red** — failing on the assertion that encodes the expected behaviour. Keep the
 failing output for step 4.
 
@@ -119,7 +118,7 @@ Per the TDD loop, **COMMIT replaced by STOP**:
 
 - **GREEN** — the agreed change at the cause; the step-3 test now passes. No drive-by refactors.
 - **GATE** — the repo's full check (tests + static analysis + architecture + style), per `CLAUDE.md` /
-  [`../implement/references/command-detection.md`](../implement/references/command-detection.md).
+  [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md).
 - An unagreed decision appears (changes behaviour or a contract) → ask now; a convention-following
   detail → just do it.
 
@@ -143,7 +142,7 @@ None found → one line saying so.
   Remove → delete the test file / method and re-run the affected suite once.
 - If the bug exposed a rule that wasn't written down, add it to the context's `language.md`
   `## Invariants` (bootstrap the file per the contexts reference if absent) — it lands in the same diff.
-- Emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant):
+- Hand over per [`../_shared/house-rules.md`](../_shared/house-rules.md) 
   one line with the gate result, then «Review the diff and commit it yourself». Never `git add` /
   `git commit`.
 
@@ -157,7 +156,7 @@ None found → one line saying so.
 - The dev chose whether the pinning test stays.
 - Gate green; nothing committed by Claude.
 - The RED pin + the GATE are this skill's **structural self-check**
-  ([`../_shared/self-check.md`](../_shared/self-check.md)); the result is the handoff line.
+  ([`../_shared/house-rules.md`](../_shared/house-rules.md)); the result is the handoff line.
 
 ## Anti-patterns
 
