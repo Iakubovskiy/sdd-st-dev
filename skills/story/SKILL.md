@@ -7,7 +7,7 @@ description: >
   Use to build a feature from a PM user story — not from an idea, not from a spec. The dev pastes
   the story (or a ticket key); Claude scouts the code, asks only what the story + code can't answer,
   runs a devil's-advocate pass for flow gaps and conflicts with existing behaviour, sizes the scope,
-  models the domain (class / sequence diagrams only when the scope needs them, code-first), agrees
+  models only what the scope needs (per stack: aggregates on the backend, screen states and navigation on web / mobile), agrees
   every slice's behaviour + tests with the dev interactively BEFORE writing code, then runs the TDD
   loop. Never commits — the dev reviews and commits each slice (ownership stays with the dev).
   Triggers on "/st-plug:story", "story {slug}", "implement this story", "here's the story",
@@ -76,7 +76,7 @@ Classify the change in the repo's own terms and show it as one screen:
 
 - **wiring** — Action + UseCase + DTO, a repository method, a presenter, a CLI command, config;
 - **domain** — new/changed entity, VO, enum/state, domain service, invariant, cross-context event;
-- **data** — schema change (code-first: entity mapping changes; the migration is generated later),
+- **data** — schema / local-storage change (per the surface's persistence rule),
   plus what happens to **existing rows** (new non-null field, changed enum, backfill).
 
 Then cut it into **vertical slices**: one slice = one behaviour group (a few ACs) that ends with green
@@ -87,17 +87,19 @@ the scope + slices / adjust (Other).
 
 ### 4. Model — only what the scope demands
 
+Detect the surface and take its modelling rules from [`../_shared/surfaces.md`](../_shared/surfaces.md)
+(backend, web, Flutter, Android, iOS each have their own triggers — a screen-state diagram on mobile,
+an aggregate class diagram on the backend). In every surface:
+
 | Scope has | Produce | Where |
 |---|---|---|
-| new or changed entity / VO / aggregate | Mermaid `classDiagram` (only the touched part) + 2–4 lines **what it gives us**: the invariants it guards, why the aggregate boundary is here, cross-context links by UUID | update `docs/contexts/<Context>/model.md` |
-| a non-trivial flow — >1 collaborator after the use case, async/Messenger, transaction + locking, external integration, or a state change | Mermaid `sequenceDiagram` of that flow | the same `model.md`, under the flow's name |
+| what the surface table says needs a diagram | that diagram (only the touched part) + 2–4 lines **what it gives us**: the invariants / states it guards, why the boundary is here | `docs/contexts/<Context>/model.md` |
 | a new term, or an existing term used differently | glossary line (term · definition · NOT-confused-with) | `docs/contexts/<Context>/language.md` |
-| wiring only (list/get endpoint, repo method) | nothing | — |
+| wiring only | nothing | — |
 
-**Code-first.** The model is PHP entities with ORM mapping — never hand-written SQL. Migrations are
-produced by the repo's diff tool (e.g. `doctrine:migrations:diff`) **after** the entity slice is
-green, and shown to the dev. Diagrams are validated per [`../_shared/mermaid-check.md`](../_shared/mermaid-check.md)
-and presented as a prose delta, never dumped raw.
+Schema / persistence changes follow the surface's rule (backend: code-first, the ORM generates the
+migration; mobile: the local DB's versioned migration). Diagrams are validated per
+[`../_shared/mermaid-check.md`](../_shared/mermaid-check.md) and presented as a prose delta, never dumped raw.
 
 One `AskUserQuestion`: model accepted / adjust (Other).
 
@@ -123,8 +125,8 @@ beside the chat — not a document.
 Run the per-task cycle from [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md):
 `RED → GREEN → REFACTOR → GATE`, with **COMMIT replaced by STOP**. Gate commands come from
 `CLAUDE.md` / the detection cascade ([`../_shared/tdd-loop.md`](../_shared/tdd-loop.md)).
-Code-first schema: after the entity changes are green, generate the migration with the repo's tool
-and include it in the slice.
+Schema change: after the model change is green, produce the migration the surface's way
+([`../_shared/surfaces.md`](../_shared/surfaces.md)) and include it in the slice.
 
 **Nothing stays open.** If GREEN hits a decision that was not agreed in step 5:
 - it changes behaviour, the model, or a contract (a new state, a locking strategy, a new error the
@@ -160,7 +162,7 @@ independent review — never a gate.
 
 - **Handing the dev a document to approve** — plans, task lists, tables. Ask decisions instead.
 - **Modelling wiring** — a class diagram for a list endpoint.
-- **Writing SQL / staging migrations** — this repo is code-first; the diff tool owns migrations.
+- **Hand-writing what a tool generates** — e.g. SQL in a code-first backend; follow the surface's persistence rule.
 - **A "reject" option** — it ends the flow; offer a steer instead.
 - **Committing** — the dev owns the commit.
 - **Re-interviewing the product** — the PM already decided *what*; ask only what blocks *how*.

@@ -14,7 +14,8 @@ docs/contexts/
     model.md           ← aggregates (classDiagram) + named flows (sequenceDiagram) + decision log
 ```
 
-`<Context>` = the module directory name (e.g. `Account`, `Identity`, `Trip`).
+`<Context>` = the module / feature name — what that is per stack (a Symfony module, a Flutter feature,
+an Android feature module …) → [`surfaces.md`](./surfaces.md).
 
 ## language.md
 

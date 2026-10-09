@@ -39,6 +39,13 @@ devil's-advocate challenge of cause + fix → shows you cause, failing assertion
 and the proposed fix → applies it through the gate → recommends spots with the same mistake → asks
 whether to keep the test.
 
+## Stacks
+
+Works on Symfony and Node backends, web frontends (Vue / React), Flutter, Android (Kotlin) and iOS
+(Swift). Each command detects the stack and switches what it models (aggregates on the backend;
+screen states, navigation and app ↔ API ↔ cache flows on web / mobile), how schema changes happen
+and which test levels it proposes → [`skills/_shared/surfaces.md`](./skills/_shared/surfaces.md).
+
 ## House rules (all commands)
 
 - **Claude never commits.** You review the diff and commit — ownership stays with you.
@@ -71,7 +78,7 @@ After an update: re-run `/plugin install st-plug@sdd-st-dev`, then `/reload-plug
 .claude-plugin/   plugin.json + marketplace.json
 agents/           explorer (sonnet) · devils-advocate · reviewer
 skills/           story · small-task · fix · review
-skills/_shared/   house-rules · tdd-loop · contexts · mermaid-check
+skills/_shared/   house-rules · tdd-loop · contexts · surfaces · mermaid-check
 scripts/          validate_plugin.py — the CI gate
 evals/            on-demand eval harness (scenarios to be added)
 ```

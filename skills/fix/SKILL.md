@@ -58,7 +58,7 @@ symptom; this skill does not.
   Symptom (where it shows) and cause (where the wrong decision is made) are named separately.
 - **2–3 hypotheses, not one.** Each is confirmed or refuted with evidence — a test, a query, a code
   path that can or can't be reached. Keep the refuted ones: they go into the step-4 summary in one line each.
-- **Check the usual suspects** when they fit the symptom: data already in the DB (nulls, old enum
+- **Check the usual suspects** for the surface ([`../_shared/surfaces.md`](../_shared/surfaces.md)) when they fit the symptom, e.g.: data already in the DB (nulls, old enum
   values, rows created before a migration), concurrency / transactions / locking (intermittent bugs),
   time zones and periods, rounding / money, caching, async ordering.
 - **History, no files.** `git log -L` / `git blame` on the cause lines: which change introduced it,
@@ -67,9 +67,8 @@ symptom; this skill does not.
 
 ### 3. Prove it — a failing test before any fix
 
-Write the test that reproduces the bug at the level the behaviour implies (unit for a rule,
-integration for persistence / a handler, functional for a request → full response; style per
-`CLAUDE.md`). Run it and classify per [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md):
+Write the test that reproduces the bug at the level the behaviour implies — the surface's test levels
+([`../_shared/surfaces.md`](../_shared/surfaces.md)); style per `CLAUDE.md`. Run it and classify per [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md):
 it must be a **GOOD red** — failing on the assertion that encodes the expected behaviour. Keep the
 failing output for step 4.
 

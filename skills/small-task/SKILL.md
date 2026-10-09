@@ -65,7 +65,7 @@ One `AskUserQuestion` call, one question per behaviour (≤ 3):
 
 > **<Behaviour>**
 > I'm doing: <the change, in domain terms> — following `<ExistingThing>` (`File.php`).
-> I'm testing it from: <unit — …>; <integration — …>; <functional — request → full response …>.
+> I'm testing it from: <levels per the surface — [`../_shared/surfaces.md`](../_shared/surfaces.md)>.
 
 Options — no "reject":
 - «Yes, do it» **(Recommended)**;
@@ -79,8 +79,7 @@ Devil's-advocate findings (if any) go into the same call, before the behaviours.
 Per [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md): `RED → GREEN →
 REFACTOR → GATE`, **COMMIT replaced by STOP**. Gate commands per `CLAUDE.md` /
 [`../_shared/tdd-loop.md`](../_shared/tdd-loop.md).
-Code-first schema change → generate the migration with the repo's diff tool after the entity change is
-green. An unagreed decision that changes behaviour or a contract → ask now; a convention-following
+Schema / local-storage change → the surface's persistence rule ([`../_shared/surfaces.md`](../_shared/surfaces.md)). An unagreed decision that changes behaviour or a contract → ask now; a convention-following
 detail → just do it.
 
 ### 5. Hand over
