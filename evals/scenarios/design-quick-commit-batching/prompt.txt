@@ -1,0 +1,6 @@
+/sdd:design rate-limit-bump --depth=easy
+
+Headless eval run — there is NO interactive user; never call AskUserQuestion. Follow the design
+skill's protocol exactly as written, deciding every decision yourself with the Recommended
+option. Assume the single target surface is backend-service. Resolve any critic findings
+autonomously (accept the amendment) — never ask.

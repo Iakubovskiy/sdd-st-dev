@@ -1,0 +1,7 @@
+/sdd:classify-size tiny-toggle
+
+Headless eval run — there is NO interactive user; never call AskUserQuestion. Read
+docs/features/tiny-toggle/spec.md; the four size signals are obvious from it (a one-line
+configuration default change: 1 PR, under a day, none of new module/API/migration, no breaking
+changes). Take the resulting classification and its default route yourself, write the files, and
+finish by printing the stage-handoff block.

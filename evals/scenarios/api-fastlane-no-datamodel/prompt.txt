@@ -1,0 +1,4 @@
+/sdd:api delete-own-feedback --depth=easy
+
+Headless eval run — there is NO interactive user; never call AskUserQuestion. Follow the api
+skill's protocol exactly as written.

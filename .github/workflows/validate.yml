@@ -1,0 +1,105 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Validate plugin (name / version / description + skill & agent frontmatter)
+        run: python3 scripts/validate_plugin.py
+
+      - name: No references to excluded legacy dirs
+        run: |
+          if grep -REn '00-overview|document-templates|examples/|scripts/sdlc_lint|generate-gates' skills agents README.md 2>/dev/null; then
+            echo "FAIL: found a reference to an excluded legacy dir/file"; exit 1
+          fi
+          echo "OK: no excluded-dir references"
+
+      - name: Lint install.sh
+        run: |
+          bash -n install.sh
+          shellcheck install.sh
+
+  # matrix incl. macos-latest: BSD sed/find/wc differ from GNU — a cheap guard against
+  # installer regressions that only bite on a Mac.
+  smoke-install:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"   # tomllib needs 3.11+; macos system python can be older
+
+      - name: Smoke-install codex + cursor (install → assert → re-run → uninstall)
+        shell: bash
+        run: |
+          set -x
+          # counts come from the source tree, not hardcoded — adding a skill/agent must not
+          # require touching this workflow
+          n_skills=$(find skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -dc '0-9')
+          n_agents=$(find agents -maxdepth 1 -name '*.md' | wc -l | tr -dc '0-9')
+          test "$n_skills" -ge 16 && test "$n_agents" -ge 9
+          for tool in codex cursor; do
+            prefix=$(mktemp -d)
+            ./install.sh "$tool" --src . --prefix "$prefix"
+            case "$tool" in
+              codex)  skills="$prefix/.agents/skills"; agents="$prefix/.codex/agents" ;;
+              cursor) skills="$prefix/.cursor/skills"; agents="$prefix/.cursor/agents" ;;
+            esac
+            # the subtree is verbatim: skills renamed sdd-*, _shared + agents docs intact
+            grep -q '^name: sdd-specify$' "$skills/sdd/skills/specify/SKILL.md"
+            test "$(grep -rl '^name: sdd-' "$skills"/sdd/skills/*/SKILL.md | wc -l | tr -dc '0-9')" -eq "$n_skills"
+            test -f "$skills/sdd/skills/_shared/handoff.md"
+            test -f "$skills/sdd/skills/_shared/tool-adapters.md"
+            test -f "$skills/sdd/agents/reviewer.md"
+            if [ "$tool" = codex ]; then
+              # every generated agent TOML parses; sandbox follows the tools declaration
+              python3 - "$agents" "$n_agents" <<'EOF'
+          import sys, tomllib
+          from pathlib import Path
+          files = sorted(Path(sys.argv[1]).glob("sdd-*.toml"))
+          assert len(files) == int(sys.argv[2]), files
+          for f in files:
+              d = tomllib.load(open(f, "rb"))
+              assert d["name"] == f.stem and d["description"] and d["developer_instructions"], f
+              want = "workspace-write" if f.stem in ("sdd-implementer", "sdd-test-author") else "read-only"
+              assert d["sandbox_mode"] == want, (f.name, d["sandbox_mode"])
+          print(f"{len(files)} agent TOMLs OK")
+          EOF
+            else
+              grep -q '^name: sdd-reviewer$' "$agents/sdd-reviewer.md"
+              grep -q '^model: inherit$' "$agents/sdd-reviewer.md"
+              test "$(ls "$agents"/sdd-*.md | wc -l | tr -dc '0-9')" -eq "$n_agents"
+            fi
+            # idempotency: a second run cleans first and converges to the same layout
+            ./install.sh "$tool" --src . --prefix "$prefix"
+            grep -q '^name: sdd-specify$' "$skills/sdd/skills/specify/SKILL.md"
+            # a mid-install failure must roll back, not leave a half-copy
+            mkdir "$prefix/broken-src" && cp -R skills agents "$prefix/broken-src/"
+            sed_i() { if sed --version >/dev/null 2>&1; then sed -i "$@"; else sed -i '' "$@"; fi; }
+            sed_i 's/^name: design$/name: broken-on-purpose/' "$prefix/broken-src/skills/design/SKILL.md"
+            if ./install.sh "$tool" --src "$prefix/broken-src" --prefix "$prefix"; then
+              echo "FAIL: install.sh succeeded on a broken source"; exit 1
+            fi
+            test ! -e "$skills/sdd" || { echo "FAIL: partial install left behind"; exit 1; }
+            # reinstall the good tree, then uninstall leaves the prefix clean
+            ./install.sh "$tool" --src . --prefix "$prefix"
+            ./install.sh "$tool" --prefix "$prefix" --uninstall
+            test ! -e "$skills/sdd"
+            if ls "$agents"/sdd-* 2>/dev/null; then echo "FAIL: agents not removed"; exit 1; fi
+          done

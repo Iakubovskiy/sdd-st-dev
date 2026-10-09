@@ -1,0 +1,9 @@
+/sdd:specify rate-limit-bump --depth=easy
+
+Headless eval run — there is NO interactive user; never call AskUserQuestion. The raw idea to
+capture: operators need to bump a customer's per-user API rate limit at runtime (a configuration
+change, no redeploy), so support can unblock a busy customer in minutes instead of waiting for a
+release. For everything you would normally ask, take the sensible default and record it in the
+assumptions ledger (size signals: 1 PR, under a day, no new module/API/migration, internal only —
+no breaking changes). Skip any subagent/ideation dispatch that is unavailable and note the gap.
+Write the spec and finish by printing the stage-handoff block.
