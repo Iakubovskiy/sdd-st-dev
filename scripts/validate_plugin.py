@@ -71,14 +71,15 @@ for d in docs:
               f"broken link in {d.relative_to(ROOT)}: {target}")
 
 print("== invocation form & removed commands ==")
+PREFIX = plugin["name"]
 removed = ("specify", "clarify", "design", "sequences", "data-model", "api", "tasks", "plan-tests",
            "implement", "ship", "survey", "scaffold", "roadmap", "interview", "config", "glossary",
            "classify-size", "decide-adr", "design-system", "ux-flows", "screens")
 for d in docs:
     text = d.read_text(encoding="utf-8")
-    hy = re.findall(r"(?<![\w/])/sdd-(?!st-dev)", text)
-    check(not hy, f"{d.relative_to(ROOT)}: /sdd:<name> form", f"{d.relative_to(ROOT)}: hyphenated /sdd- command form")
-    stale = sorted({c for c in removed if re.search(rf"/sdd:{re.escape(c)}\b", text)})
+    old = re.findall(r"(?<![\w/-])/sdd:[\w-]+", text)
+    check(not old, f"{d.relative_to(ROOT)}: /{PREFIX}:<name> form", f"{d.relative_to(ROOT)}: old /sdd: command prefix {old}")
+    stale = sorted({c for c in removed if re.search(rf"/{re.escape(PREFIX)}:{re.escape(c)}\b", text)})
     check(not stale, f"{d.relative_to(ROOT)}: no removed commands", f"{d.relative_to(ROOT)}: references removed commands {stale}")
 
 print("== _shared no-orphan ==")
@@ -89,7 +90,7 @@ for s in sorted((ROOT / "skills/_shared").glob("*.md")):
 print("== skill list in README ==")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 for name in skills:
-    check(f"/sdd:{name}" in readme, f"README documents /sdd:{name}", f"README never mentions /sdd:{name}")
+    check(f"/{plugin['name']}:{name}" in readme, f"README documents /{plugin['name']}:{name}", f"README never mentions /{plugin['name']}:{name}")
 
 print()
 if errors:

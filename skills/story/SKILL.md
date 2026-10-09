@@ -10,7 +10,7 @@ description: >
   models the domain (class / sequence diagrams only when the scope needs them, code-first), agrees
   every slice's behaviour + tests with the dev interactively BEFORE writing code, then runs the TDD
   loop. Never commits — the dev reviews and commits each slice (ownership stays with the dev).
-  Triggers on "/sdd:story", "story {slug}", "implement this story", "here's the story",
+  Triggers on "/st-plug:story", "story {slug}", "implement this story", "here's the story",
   "ось сторі", "зроби сторі", "реалізуй сторю", "фіча по сторі".
 ---
 
@@ -36,7 +36,7 @@ No spec documents, no task files, no hand-written SQL. Conventions come from the
 - `docs/contexts/<Context>/language.md` + `model.md` for every touched context — read if present,
   bootstrapped if absent (step 1) → [`../_shared/contexts.md`](../_shared/contexts.md).
 - Working state: `.sdd/stories/<slug>.md` (gitignored) — answers, findings, decisions, slice
-  status. Lets the run stop (PM blocker) and resume with `/sdd:story <slug>`.
+  status. Lets the run stop (PM blocker) and resume with `/st-plug:story <slug>`.
 
 ## Protocol
 
@@ -68,7 +68,7 @@ Present each finding as one `AskUserQuestion` (batch ≤ 4 per call):
 
 Record every outcome in `.sdd/stories/<slug>.md`. **If anything was deferred to PM → STOP.** Print a
 copy-ready message for the PM (story ref + each question with context + Claude's suggested answer)
-and `/sdd:story <slug>` to resume. On resume, ask the dev for the PM's answers and continue from step 3.
+and `/st-plug:story <slug>` to resume. On resume, ask the dev for the PM's answers and continue from step 3.
 
 ### 3. Scope
 
@@ -143,7 +143,7 @@ Two lines, no report — every decision was already made with the dev in steps 5
 - then: «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
 
 Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, hand over per
-[`../_shared/house-rules.md`](../_shared/house-rules.md) and offer `/sdd:review` as an **optional**
+[`../_shared/house-rules.md`](../_shared/house-rules.md) and offer `/st-plug:review` as an **optional**
 independent review — never a gate.
 
 ## Definition of Done

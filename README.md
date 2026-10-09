@@ -14,12 +14,12 @@ behaviour with you before writing code — without handing you documents to read
 
 | Command | Input | What you get |
 |---|---|---|
-| `/sdd:story` | a PM story | conflicts with the existing system found before coding, a domain model only where needed, slices built test-first |
-| `/sdd:small-task` | a short task | the change built the way the repo already does it — or a heads-up that it's really a feature |
-| `/sdd:fix` | a bug report / stack trace / logs | the root cause proven by a failing test, the fix agreed, then applied; similar spots recommended |
-| `/sdd:review` | your uncommitted diff | an optional clean-context review, each finding resolved on the spot |
+| `/st-plug:story` | a PM story | conflicts with the existing system found before coding, a domain model only where needed, slices built test-first |
+| `/st-plug:small-task` | a short task | the change built the way the repo already does it — or a heads-up that it's really a feature |
+| `/st-plug:fix` | a bug report / stack trace / logs | the root cause proven by a failing test, the fix agreed, then applied; similar spots recommended |
+| `/st-plug:review` | your uncommitted diff | an optional clean-context review, each finding resolved on the spot |
 
-### `/sdd:story`
+### `/st-plug:story`
 1. **Scout + ask** — maps the touched modules, entities, states and events; asks only what the story and the code can't answer.
 2. **Devil's advocate** — story vs system: conflicts with existing behaviour, missing states, broken invariants, cross-module side effects, existing data. Each finding: recommendation / alternative / *ask PM* / your answer. Anything for the PM → a ready message and a stop.
 3. **Scope** — wiring / domain / data, cut into vertical slices (≤ 3 domain decisions each; > 4 slices → split the story).
@@ -27,12 +27,12 @@ behaviour with you before writing code — without handing you documents to read
 5. **Agree each slice** — «I'm doing X, testing it from Y and Z» → yes / a variation / your answer.
 6. **Build** — RED → GREEN → REFACTOR → GATE, then stop: you review and commit each slice.
 
-### `/sdd:small-task`
+### `/st-plug:small-task`
 Finds where the change goes and the closest existing example to follow → checks it isn't secretly a
-feature (offers `/sdd:story` if it is; a devil's-advocate pass when existing behaviour changes) →
+feature (offers `/st-plug:story` if it is; a devil's-advocate pass when existing behaviour changes) →
 agrees behaviour + tests → builds test-first → stops for your commit.
 
-### `/sdd:fix`
+### `/st-plug:fix`
 States the bug in one line → digs: 2–3 hypotheses, traces the wrong value to where it's born, checks
 the usual suspects and git history → writes a test that fails today → (non-trivial bugs) a
 devil's-advocate challenge of cause + fix → shows you cause, failing assertion, ruled-out hypotheses
@@ -60,10 +60,10 @@ code. → [`skills/_shared/contexts.md`](./skills/_shared/contexts.md)
 
 ```text
 /plugin marketplace add Iakubovskiy/sdd-st-dev
-/plugin install sdd@sdd-st-dev
+/plugin install st-plug@sdd-st-dev
 ```
 
-After an update: re-run `/plugin install sdd@sdd-st-dev`, then `/reload-plugins`.
+After an update: re-run `/plugin install st-plug@sdd-st-dev`, then `/reload-plugins`.
 
 ## Repository layout
 

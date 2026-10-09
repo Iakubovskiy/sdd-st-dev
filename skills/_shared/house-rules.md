@@ -69,4 +69,4 @@ the dev is using in the session.
 Every skill ends the same way — two lines, no report:
 1. the gate result in one line (e.g. `phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`) — the gate is each
    skill's **structural self-check**; a red or skipped tier is named, never hidden;
-2. «Review the diff and commit it yourself» (+ the optional next command, e.g. `/sdd:review`).
+2. «Review the diff and commit it yourself» (+ the optional next command, e.g. `/st-plug:review`).

@@ -9,7 +9,7 @@ description: >
   proves it with a failing test, shows the failure + proposes the fix and agrees it with the dev,
   then fixes it through the gate, then recommends places with the same mistake,
   and leaves the change uncommitted for the dev. A reported bug is always treated as a bug — Claude
-  never argues it away. Triggers on "/sdd:fix", "fix {bug}", "bug in {X}", "regression in {X}",
+  never argues it away. Triggers on "/st-plug:fix", "fix {bug}", "bug in {X}", "regression in {X}",
   "полагодь баг", "виправ багу", "ось баг", "регресія в {X}", "чому зламалось".
 ---
 
@@ -110,7 +110,7 @@ Options (no "reject" — the dev steers instead):
 **Expected behaviour undefined** (no invariant, ticket and code silent, two reasonable readings)?
 Ask that first, in the same call: Claude's recommended behaviour / the alternative / **«Ask PM»** /
 Other. «Ask PM» → print a copy-ready question for the PM and **stop**; the test stays in the working
-tree; the dev re-runs `/sdd:fix` with the answer.
+tree; the dev re-runs `/st-plug:fix` with the answer.
 
 ### 5. GREEN → GATE
 

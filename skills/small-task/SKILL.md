@@ -6,9 +6,9 @@ agents: [explorer, devils-advocate]
 description: >
   Use for a small change that doesn't need modelling: a field, a filter, an endpoint variant, a rule
   tweak, a CLI option — one behaviour group, one session, no documents. Claude finds where it goes
-  and the existing pattern to follow, checks it isn't secretly a big feature (offers /sdd:story if it
+  and the existing pattern to follow, checks it isn't secretly a big feature (offers /st-plug:story if it
   is), agrees the behaviour + tests with the dev before writing code, builds it test-first, and
-  leaves the change uncommitted. Triggers on "/sdd:small-task", "small task", "quick change",
+  leaves the change uncommitted. Triggers on "/st-plug:small-task", "small task", "quick change",
   "add a field / filter / option to …", "невелика задача", "маленька фіча", "дрібна зміна", "додай поле".
 ---
 
@@ -42,13 +42,13 @@ Grep/Read yourself (no subagent by default; dispatch [`explorer`](../../agents/e
 
 ### 2. Is it really small?
 
-Recommend `/sdd:story` instead when **any** holds:
+Recommend `/st-plug:story` instead when **any** holds:
 - a new entity / aggregate, or a new state / transition on an existing one;
 - more than one bounded context changes (beyond reading by UUID);
 - more than ~3 behaviours to agree in step 3;
 - a schema change that touches existing rows (backfill, new non-null field, changed enum).
 
-Then one `AskUserQuestion`: «Switch to /sdd:story» **(Recommended)** / «Keep it small — I know the
+Then one `AskUserQuestion`: «Switch to /st-plug:story» **(Recommended)** / «Keep it small — I know the
 scope» / Other. Staying small is the dev's call.
 
 **Changes existing behaviour?** Dispatch [`devils-advocate`](../../agents/devils-advocate.md) in
@@ -56,7 +56,7 @@ scope» / Other. Staying small is the dev's call.
 skip it. Findings are **not truncated** — how many there are is itself the signal:
 - **≤ 3 material findings** → they become questions in step 3 (recommendation / alternative /
   «Ask PM» / Other); «Ask PM» → copy-ready question for the PM and **stop**;
-- **more than 3** → the task isn't small: one `AskUserQuestion` — «Switch to /sdd:story» **(Recommended)**,
+- **more than 3** → the task isn't small: one `AskUserQuestion` — «Switch to /st-plug:story» **(Recommended)**,
   carrying the findings over / «Stay small — walk me through all of them» / Other.
 
 ### 3. Agree before code

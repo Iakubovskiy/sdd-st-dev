@@ -8,7 +8,7 @@ description: >
   a clean-context reviewer checks the diff against what was asked (the story / bug / task text and
   the behaviours agreed in this session), the repo's conventions (CLAUDE.md) and the touched
   contexts' invariants, then each finding is resolved with the dev on the spot. Triggers on
-  "/sdd:review", "review my changes", "review the diff", "is this ready for PR", "переглянь зміни",
+  "/st-plug:review", "review my changes", "review the diff", "is this ready for PR", "переглянь зміни",
   "зроби рев'ю", "рев'ю диффу".
 ---
 

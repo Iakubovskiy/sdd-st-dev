@@ -1,7 +1,7 @@
 {
-  "name": "sdd",
+  "name": "st-plug",
   "version": "0.1.0",
-  "description": "Team fork of genkovich/sdd (MIT) for developers: four commands on top of a TDD engine. /sdd:story — a PM story to code: scouts the code, a devil's-advocate pass for conflicts with the existing system, code-first domain modelling only when needed, every slice's behaviour + tests agreed interactively before code. /sdd:small-task — small changes that follow the repo's existing pattern, with a check that it isn't secretly a feature. /sdd:fix — root cause over symptom: several hypotheses, proof by a failing test, the fix agreed before it's applied. /sdd:review — optional clean-context review. Claude never commits; docs grow per bounded context (docs/contexts).",
+  "description": "Team fork of genkovich/sdd (MIT) for developers: four commands on top of a TDD engine. /st-plug:story — a PM story to code: scouts the code, a devil's-advocate pass for conflicts with the existing system, code-first domain modelling only when needed, every slice's behaviour + tests agreed interactively before code. /st-plug:small-task — small changes that follow the repo's existing pattern, with a check that it isn't secretly a feature. /st-plug:fix — root cause over symptom: several hypotheses, proof by a failing test, the fix agreed before it's applied. /st-plug:review — optional clean-context review. Claude never commits; docs grow per bounded context (docs/contexts).",
   "author": {
     "name": "Iakubovskiy",
     "url": "https://github.com/Iakubovskiy"
