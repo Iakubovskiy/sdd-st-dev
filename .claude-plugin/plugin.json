@@ -1,7 +1,7 @@
 {
   "name": "st-plug",
-  "version": "0.1.0",
-  "description": "Team fork of genkovich/sdd (MIT) for developers: four commands on top of a TDD engine. /st-plug:story — a PM story to code: scouts the code, a devil's-advocate pass for conflicts with the existing system, code-first domain modelling only when needed, every slice's behaviour + tests agreed interactively before code. /st-plug:small-task — small changes that follow the repo's existing pattern, with a check that it isn't secretly a feature. /st-plug:fix — root cause over symptom: several hypotheses, proof by a failing test, the fix agreed before it's applied. /st-plug:review — optional clean-context review. Claude never commits; docs grow per bounded context (docs/contexts).",
+  "version": "0.2.0",
+  "description": "Stfalcon team fork of genkovich/sdd (MIT) for developers on Symfony / Node backends, web, Flutter, Android and iOS. /st-plug:story — a PM story to code: code scout, a devil's-advocate pass (existing behaviour, API contract, design, environments, external providers' rules), modelling only where needed, every slice agreed before code, built test-first. /st-plug:small-task — small changes following the repo's own patterns. /st-plug:fix — root cause proven by a failing test, the fix agreed before it's applied. /st-plug:task-review — runtime-hazard review (leaks, loops, races, N+1, deadlocks) at the end of every flow. /st-plug:answer — answers a question from the other side for both the person and their Claude. Takes Figma / screenshots and Swagger links; asks PM, backend or frontend when the code can't answer. Claude never commits.",
   "author": {
     "name": "Iakubovskiy",
     "url": "https://github.com/Iakubovskiy"

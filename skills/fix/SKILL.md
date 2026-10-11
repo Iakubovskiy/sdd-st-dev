@@ -33,6 +33,8 @@ a convention-following detail, just made. Conventions (layering, test style, gat
 ## Inputs
 
 - The bug report, in any form. Required.
+- Optional: screenshots of the bug (or the design to compare with) and an API contract
+  (Swagger / OpenAPI link or file) → [`../_shared/inputs.md`](../_shared/inputs.md).
 - `CLAUDE.md` + the code.
 - `docs/contexts/<Context>/language.md` (if present) — its **Invariants** are the closest thing to a
   spec: a violated invariant confirms the expected behaviour → [`../_shared/contexts.md`](../_shared/contexts.md).
@@ -108,8 +110,9 @@ Options (no "reject" — the dev steers instead):
 
 **Expected behaviour undefined** (no invariant, ticket and code silent, two reasonable readings)?
 Ask that first, in the same call: Claude's recommended behaviour / the alternative / **«Ask PM»** /
-Other. «Ask PM» → print a copy-ready question for the PM and **stop**; the test stays in the working
-tree; the dev re-runs `/st-plug:fix` with the answer.
+**«Ask backend»** / **«Ask frontend»** (e.g. the client bug depends on what the API should return) /
+Other. Any «Ask …» → print the messages per [`../_shared/house-rules.md`](../_shared/house-rules.md)
+and **stop**; the test stays in the working tree; the dev re-runs `/st-plug:fix` with the answer.
 
 ### 5. GREEN → GATE
 
@@ -131,7 +134,12 @@ recommend them, one `AskUserQuestion`, each place as `file:line` + why it's the 
 
 None found → one line saying so.
 
-### 7. Hand over
+### 7. Review
+
+Run [`task-review`](../task-review/SKILL.md) on the fix diff: in-diff problems fixed right away, outside
+ones listed (on top of step 6's same-mistake recommendations — don't repeat those).
+
+### 8. Hand over
 
 - **Keep the pinning test?** One `AskUserQuestion` (bundled with step 6's question when there is one):
   - «Keep it» — **(Recommended)** for a unit / integration test: cheap, and it guards the regression;
@@ -139,11 +147,11 @@ None found → one line saying so.
     this endpoint: the fix stays proven (it went red → green), the suite doesn't grow another slow test;
   - Other — e.g. «fold the case into `<ExistingTest>`».
   Remove → delete the test file / method and re-run the affected suite once.
-- If the bug exposed a rule that wasn't written down, add it to the context's `language.md`
-  `## Invariants` (bootstrap the file per the contexts reference if absent) — it lands in the same diff.
-- Hand over per [`../_shared/house-rules.md`](../_shared/house-rules.md) 
-  one line with the gate result, then «Review the diff and commit it yourself». Never `git add` /
-  `git commit`.
+- If the bug exposed a rule that wasn't written down, add it to the context's `language.md` —
+  `## Invariants`, or `## External constraints` for a provider rule (a fee, a limit, a webhook quirk);
+  bootstrap the file per the contexts reference if absent — it lands in the same diff.
+- Hand over per [`../_shared/house-rules.md`](../_shared/house-rules.md): gate result, task-review
+  result, «Review the diff and commit it yourself». Never `git add` / `git commit`.
 
 ## Definition of Done
 
@@ -153,6 +161,7 @@ None found → one line saying so.
 - The failing test + proposed fix were agreed with the dev before production code changed; nothing left open.
 - The same-mistake search ran after the fix and its findings were recommended to the dev.
 - The dev chose whether the pinning test stays.
+- `task-review` ran; in-diff findings fixed, outside ones listed.
 - Gate green; nothing committed by Claude.
 - The RED pin + the GATE are this skill's **structural self-check**
   ([`../_shared/house-rules.md`](../_shared/house-rules.md)); the result is the handoff line.

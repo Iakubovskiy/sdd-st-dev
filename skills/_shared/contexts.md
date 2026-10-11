@@ -27,7 +27,17 @@ an Android feature module …) → [`surfaces.md`](./surfaces.md).
 
 ## Invariants
 - <X always must / can never …>  (source: `path/File.php:line`)
+
+## External constraints
+- **<Provider>** — <rule that shapes our logic: a fee and who pays it, a limit, a timing, a failure
+  mode>. (source: <provider doc URL> · checked <date>)
 ```
+
+`## External constraints` is where integration rules live once someone hits them — e.g. «Stripe —
+transfers to connected accounts and the connected-account fee are charged to the platform; payout =
+amount − platform fee − Stripe fees». `story`, `small-task` and `fix` add a line whenever the devil's
+advocate or a bug surfaces such a rule; the devil's advocate reads this section before anything else
+for stories that touch the provider.
 
 The same word may mean different things in different contexts — that's the point. Example: `Driver`
 in Account (an earning balance holder) vs `Driver` in Identity (a person who can log in) — same UUID,

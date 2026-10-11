@@ -44,6 +44,7 @@ A tight structured summary:
 - **Conventions** — error handling, IDs, wiring/registration, test style, migration naming (with one example each, cited `file:line`).
 - **Entities & states** — touched entities, their status enums / allowed transitions, invariants enforced in code.
 - **Cross-context links** — shared UUIDs, Messenger events published / consumed, admin views reading the data.
+- **External integrations touched** — provider SDK / client classes on the path (payments, SMS, maps, push, storage) with `file:line`.
 - **Fit notes** — where the new work would slot in, and any friction you spotted (not a design — just the lay of the land).
 
 Cite `file:line` for every claim. If you couldn't determine something, say `UNKNOWN: <what>` rather than guessing. If you were dispatched asynchronously (background/teammate mode), also deliver this exact map as a message to your dispatcher — an idle signal without the map is not a deliverable.

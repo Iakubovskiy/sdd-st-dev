@@ -31,23 +31,28 @@ No spec documents, no task files, no hand-written SQL. Conventions come from the
 ## Inputs
 
 - The story text (pasted), or a ticket key when a tracker MCP is connected. Required.
+- Optional: a design (Figma link with Figma MCP connected, or screenshots) and an API contract
+  (Swagger / OpenAPI link or file) → [`../_shared/inputs.md`](../_shared/inputs.md).
 - `<slug>` — optional; derived from the story title if absent (kebab-case, confirmed in step 1).
 - `CLAUDE.md` + the code — the convention source (layering, test style, commands).
 - `docs/contexts/<Context>/language.md` + `model.md` for every touched context — read if present,
   bootstrapped if absent (step 1) → [`../_shared/contexts.md`](../_shared/contexts.md).
 - Working state: `.sdd/stories/<slug>.md` (gitignored) — answers, findings, decisions, slice
-  status. Lets the run stop (PM blocker) and resume with `/st-plug:story <slug>`.
+  status. Lets the run stop (a question to PM / backend / frontend) and resume with `/st-plug:story <slug>`.
 
 ## Protocol
 
 ### 1. Read → scout → ask
 
 1. Read the story. Ensure `.sdd/` is in `.gitignore`; write the story verbatim to `.sdd/stories/<slug>.md`.
-2. Dispatch [`explorer`](../../agents/explorer.md) **with `model: sonnet`** (override — this map feeds
-   the conflict hunt, haiku misses semantic links). Ask for: touched bounded contexts (modules),
+2. Dispatch [`explorer`](../../agents/explorer.md) (sonnet — this map feeds the conflict hunt). Ask for: touched bounded contexts (modules),
    entities + their states/transitions, use cases / endpoints / CLI / Messenger handlers already
-   doing something similar, invariants enforced in code, cross-context links (shared UUIDs, events).
-   Output ≤ 40 lines, `file:line` anchored.
+   doing something similar, invariants enforced in code, cross-context links (shared UUIDs, events),
+   external integrations on the path. Output ≤ 40 lines, `file:line` anchored. Note the **surface**
+   ([`../_shared/surfaces.md`](../_shared/surfaces.md)).
+   **Design & contract** — per [`../_shared/inputs.md`](../_shared/inputs.md): UI work without a design
+   → create `docs/design/<slug>/` and wait for «Done» / «No design»; a Swagger link → download and
+   extract only the touched paths.
 3. For each touched context, load `language.md` + `model.md`. Missing → bootstrap a draft from the
    code per [`../_shared/contexts.md`](../_shared/contexts.md) (one confirm question per context).
 4. Ask the dev **only** what neither the story nor the code answers — one `AskUserQuestion` call,
@@ -56,19 +61,23 @@ No spec documents, no task files, no hand-written SQL. Conventions come from the
 ### 2. Devil's advocate — story vs system
 
 Dispatch [`devils-advocate`](../../agents/devils-advocate.md) in **Mode C** with: the story, the
-step-1 answers, the explorer map, the touched contexts' docs paths. It returns ≤ 7 findings,
-severity-ordered, each `[code]` (story line + `file:line`) or `[logic]` (story line + a realistic
-scenario that it has verified is reachable in the system).
+step-1 answers, the explorer map, the surface, the touched contexts' docs paths, and — if present —
+the design folder and the contract extract. It returns ≤ 7 findings, severity-ordered, each `[code]`
+(story line + `file:line` / contract / design / provider doc) or `[logic]` (story line + a realistic
+scenario it has verified is reachable), each with who can settle it.
 
 Present each finding as one `AskUserQuestion` (batch ≤ 4 per call):
 - option 1 — Claude's recommendation + one-line why **(Recommended)**;
 - option 2 — the credible alternative, if there is one;
-- option 3 — **«Defer to PM»**;
+- **«Ask PM» / «Ask backend» / «Ask frontend»** — whichever the finding's `settle` points to;
 - free text ("Other") — the dev's own answer.
 
-Record every outcome in `.sdd/stories/<slug>.md`. **If anything was deferred to PM → STOP.** Print a
-copy-ready message for the PM (story ref + each question with context + Claude's suggested answer)
-and `/st-plug:story <slug>` to resume. On resume, ask the dev for the PM's answers and continue from step 3.
+Record every outcome in `.sdd/stories/<slug>.md`. **If anything went to someone else → STOP** and
+print the messages per [`../_shared/house-rules.md`](../_shared/house-rules.md) (PM: a short message;
+backend / frontend: a short message + a brief for their Claude, answered there with
+`/st-plug:answer`), plus `/st-plug:story <slug>` to resume. On resume, ask the dev to paste the
+answers and continue from step 3. A provider rule that surfaced (fees, limits …) goes into the
+context's `## External constraints` ([`../_shared/contexts.md`](../_shared/contexts.md)).
 
 ### 3. Scope
 
@@ -137,20 +146,26 @@ Schema change: after the model change is green, produce the migration the surfac
 
 Nothing is "recorded for later" — no notes, no open-question lists.
 
-### 7. Hand the slice to the dev
+### 7. Review the slice
 
-Two lines, no report — every decision was already made with the dev in steps 5–6:
+Run [`task-review`](../task-review/SKILL.md) on the slice's diff: problems in this diff are fixed
+right away (gate re-run), problems outside it are only listed.
 
-- one line: slice name, gate result (`ci:phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`);
-- then: «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
+### 8. Hand the slice to the dev
 
-Never `git commit`, never `git add`. Repeat steps 5–7 per slice. After the last slice, hand over per
-[`../_shared/house-rules.md`](../_shared/house-rules.md) and offer `/st-plug:review` as an **optional**
-independent review — never a gate.
+A few lines, no report — every decision was already made with the dev in steps 5–7:
+
+- slice name + gate result (`ci:phpunit ✓ phpstan ✓ deptrac ✓ ecs ✓`);
+- task-review: fixed in this diff (one line) + outside the diff (`file:line` — problem), if any;
+- «Review the diff in your IDE and commit it yourself. Say *next* to start slice N+1.»
+
+Never `git commit`, never `git add`. Repeat steps 5–8 per slice; after the last one, hand over per
+[`../_shared/house-rules.md`](../_shared/house-rules.md).
 
 ## Definition of Done
 
-- Every devil's-advocate finding is resolved or was carried to the PM (and answered on resume).
+- Every devil's-advocate finding is resolved or was carried to PM / backend / frontend (and answered on resume).
+- Every slice went through `task-review`; in-diff findings fixed, outside ones listed.
 - Touched contexts' `language.md` / `model.md` reflect the change (part of the dev's diff).
 - Every behaviour was agreed in step 5 before its code was written; each has its test(s).
 - Every decision made during the build was either agreed with the dev or is a convention-following detail; nothing is left open.

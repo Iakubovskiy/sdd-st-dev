@@ -74,7 +74,7 @@ print("== invocation form & removed commands ==")
 PREFIX = plugin["name"]
 removed = ("specify", "clarify", "design", "sequences", "data-model", "api", "tasks", "plan-tests",
            "implement", "ship", "survey", "scaffold", "roadmap", "interview", "config", "glossary",
-           "classify-size", "decide-adr", "design-system", "ux-flows", "screens")
+           "classify-size", "decide-adr", "design-system", "ux-flows", "screens", "review")
 for d in docs:
     text = d.read_text(encoding="utf-8")
     old = re.findall(r"(?<![\w/-])/sdd:[\w-]+", text)

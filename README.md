@@ -17,7 +17,8 @@ behaviour with you before writing code — without handing you documents to read
 | `/st-plug:story` | a PM story | conflicts with the existing system found before coding, a domain model only where needed, slices built test-first |
 | `/st-plug:small-task` | a short task | the change built the way the repo already does it — or a heads-up that it's really a feature |
 | `/st-plug:fix` | a bug report / stack trace / logs | the root cause proven by a failing test, the fix agreed, then applied; similar spots recommended |
-| `/st-plug:review` | your uncommitted diff | an optional clean-context review, each finding resolved on the spot |
+| `/st-plug:task-review` | your diff (runs automatically at the end of the three above) | leaks, recursion / event loops, races, N+1, deadlocks … — fixed in your diff, only listed outside it |
+| `/st-plug:answer` | a question / brief from the other side (backend ↔ frontend) | a short answer for the person + a detailed one for their Claude, grounded in your code |
 
 ### `/st-plug:story`
 1. **Scout + ask** — maps the touched modules, entities, states and events; asks only what the story and the code can't answer.
@@ -45,6 +46,30 @@ Works on Symfony and Node backends, web frontends (Vue / React), Flutter, Androi
 (Swift). Each command detects the stack and switches what it models (aggregates on the backend;
 screen states, navigation and app ↔ API ↔ cache flows on web / mobile), how schema changes happen
 and which test levels it proposes → [`skills/_shared/surfaces.md`](./skills/_shared/surfaces.md).
+
+## Design and API contract
+
+`story`, `small-task` and `fix` also take a **design** and an **API contract**:
+- **Design** — a Figma link (when Figma MCP is connected) or screenshots: for UI work without a design,
+  Claude creates `docs/design/<slug>/`, tells you to drop the screens there and waits for «Done».
+- **Swagger / OpenAPI** — paste the Swagger UI link; Claude finds the JSON behind it (nelmio:
+  `/api/default.json`), downloads it into `.sdd/api/` and reads only the endpoints the task touches.
+
+→ [`skills/_shared/inputs.md`](./skills/_shared/inputs.md)
+
+## Asking PM, backend, frontend
+
+When an answer isn't in the code, a question can go to **PM** (a short message), **backend** or
+**frontend** (a short message + a brief for their Claude). The run stops; the other side answers with
+`/st-plug:answer`; you re-run the command with the answer pasted in. Everything is written in the
+language you use with Claude.
+
+## External integrations
+
+The devil's advocate checks the provider's rules a story tends to forget — fees and who pays them
+(e.g. Stripe transfer / connected-account fees), limits, payout timing, late or duplicate webhooks,
+refunds and disputes. Once found, a rule is recorded in the context's `## External constraints`, so
+the next story starts from it.
 
 ## House rules (all commands)
 
@@ -76,9 +101,9 @@ After an update: re-run `/plugin install st-plug@sdd-st-dev`, then `/reload-plug
 
 ```
 .claude-plugin/   plugin.json + marketplace.json
-agents/           explorer (sonnet) · devils-advocate · reviewer
-skills/           story · small-task · fix · review
-skills/_shared/   house-rules · tdd-loop · contexts · surfaces · mermaid-check
+agents/           explorer (sonnet) · devils-advocate · reviewer (sonnet)
+skills/           story · small-task · fix · task-review · answer
+skills/_shared/   house-rules · tdd-loop · contexts · surfaces · inputs · review-checklist · mermaid-check
 scripts/          validate_plugin.py — the CI gate
 evals/            on-demand eval harness (scenarios to be added)
 ```

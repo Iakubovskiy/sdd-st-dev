@@ -70,9 +70,35 @@ For `fix` on a client: UI-only bugs that can't be pinned below the UI level get 
 test; a device- or OS-specific bug that can't be reproduced in tests is treated like an external
 integration in `fix` step 3 — evidence instead of proof, our handling pinned with a fake.
 
+## Devil's-advocate focus, per surface
+
+What Mode C hunts for besides the common classes (conflict with existing behaviour, invariant,
+access, cross-context side effect):
+
+- **backend**: existing rows (new required field, changed enum, backfill); async ordering and
+  duplicate messages; what clients already rely on in the contract (a renamed field, a changed error).
+- **web / mobile**:
+  - states the story doesn't define — empty, error, offline, loading more, partial data, retry;
+  - lifecycle — background / resume, process death, leaving the screen mid-request;
+  - navigation — back, deep link into the middle of the flow, re-entering a finished flow;
+  - permissions denied / revoked; iOS vs Android differences; small screens, long texts / localisation;
+  - **story vs API contract** — a field / filter / error the story needs that the API doesn't provide
+    (→ «Ask backend»);
+  - **story vs design** — a state or element the story mentions that the design lacks, or the reverse.
+- **everywhere — external integrations**: the provider's own rules the story doesn't mention —
+  fees and who pays them (e.g. Stripe processing / transfer / Connect account fees eating into a
+  payout), limits and minimums, payout schedules and holds, late / duplicate webhooks, refunds /
+  disputes / reversals, verification requirements, currencies and rounding. Recorded once per context
+  in `## External constraints` ([`contexts.md`](./contexts.md)) so the next story sees them.
+- **everywhere — environment-dependent**: what works locally and not in prod, or the reverse —
+  feature flags and per-environment config, stub / test modes that hide real behaviour (OTP stubs,
+  in-memory storage, mocked external services), real integrations only in prod, data volume, cache /
+  CDN, different hosts / CORS, push certificates (sandbox vs prod), build flavours / schemes.
+
 ## Usual suspects for `fix`, per surface
 
 - **backend**: existing DB rows, transactions / locking, time zones, money rounding, async ordering.
+- **everywhere**: environment differences (see the devil's-advocate list above) — «only in prod» bugs.
 - **web**: stale cache / store not reset, race between requests, hydration, time zones in the browser.
 - **mobile**: lifecycle (background / resume / process death), stale local cache vs server, offline → online,
   token expiry mid-flow, OS-version / device differences, permissions denied, double taps.
